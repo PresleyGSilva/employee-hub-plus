@@ -1,10 +1,23 @@
 import { jsPDF } from "jspdf";
 import { COMPANY } from "./company";
 import { fmtBRL, monthNames } from "./payroll";
+import logoUrl from "@/assets/logo-tottus.png";
 
 function numToExtenso(n: number): string {
-  // Simplified: just returns formatted text
   return `${n.toFixed(2).replace(".", ",")} reais`;
+}
+
+async function loadLogoDataUrl(): Promise<string | null> {
+  try {
+    const res = await fetch(logoUrl);
+    const blob = await res.blob();
+    return await new Promise((resolve) => {
+      const r = new FileReader();
+      r.onloadend = () => resolve(r.result as string);
+      r.onerror = () => resolve(null);
+      r.readAsDataURL(blob);
+    });
+  } catch { return null; }
 }
 
 export interface PayslipPdfData {
@@ -12,10 +25,16 @@ export interface PayslipPdfData {
   employee: { full_name: string; cpf?: string | null; pix_key?: string | null; email: string };
 }
 
-export function generatePayslipPdf({ payslip, employee }: PayslipPdfData): jsPDF {
+export async function generatePayslipPdf({ payslip, employee }: PayslipPdfData): Promise<jsPDF> {
   const doc = new jsPDF();
   const pageW = doc.internal.pageSize.getWidth();
-  let y = 20;
+  let y = 15;
+
+  const logo = await loadLogoDataUrl();
+  if (logo) {
+    try { doc.addImage(logo, "PNG", pageW / 2 - 15, y, 30, 30); } catch {}
+    y += 32;
+  }
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
