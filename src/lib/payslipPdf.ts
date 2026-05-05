@@ -2,6 +2,7 @@ import { jsPDF } from "jspdf";
 import { COMPANY } from "./company";
 import { fmtBRL, monthNames } from "./payroll";
 import logoUrl from "@/assets/logo-tottus.png";
+import empregadorSigUrl from "@/assets/empregador-assinatura.png";
 
 function numeroPorExtenso(valor: number): string {
   const u = ["", "UM", "DOIS", "TRÊS", "QUATRO", "CINCO", "SEIS", "SETE", "OITO", "NOVE"];
@@ -34,9 +35,9 @@ function numeroPorExtenso(valor: number): string {
   return `${pr} E ${ie(ct)} ${ct === 1 ? "CENTAVO" : "CENTAVOS"}`;
 }
 
-async function loadLogoDataUrl(): Promise<string | null> {
+async function loadDataUrl(url: string): Promise<string | null> {
   try {
-    const res = await fetch(logoUrl);
+    const res = await fetch(url);
     const blob = await res.blob();
     return await new Promise((resolve) => {
       const r = new FileReader();
@@ -46,6 +47,7 @@ async function loadLogoDataUrl(): Promise<string | null> {
     });
   } catch { return null; }
 }
+async function loadLogoDataUrl() { return loadDataUrl(logoUrl); }
 
 export interface PayslipPdfData {
   payslip: any;
@@ -152,7 +154,15 @@ export async function generatePayslipPdf({ payslip, employee }: PayslipPdfData):
 
   // Assinaturas
   const sigW = 75;
-  ensureSpace(40);
+  ensureSpace(50);
+  // Assinatura digital do empregador acima da linha
+  const empSig = await loadDataUrl(empregadorSigUrl);
+  if (empSig) {
+    try {
+      const imgW = 70, imgH = 18;
+      doc.addImage(empSig, "PNG", margin + (sigW - imgW) / 2, y - imgH, imgW, imgH);
+    } catch {}
+  }
   doc.line(margin, y, margin + sigW, y);
   doc.line(pageW - margin - sigW, y, pageW - margin, y);
   y += 5;
