@@ -60,6 +60,7 @@ const App = () => (
               <Route path="holerites" element={<AdminPayslips />} />
               <Route path="notificacoes" element={<AdminNotifications />} />
               <Route path="metas" element={<AdminGoals />} />
+              <Route path="ferias" element={<AdminVacations />} />
               <Route path="chat" element={<Chat />} />
             </Route>
 
