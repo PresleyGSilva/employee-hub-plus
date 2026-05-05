@@ -42,6 +42,12 @@ export default function EmployeeFolders() {
     URL.revokeObjectURL(url);
   };
 
+  const openInNewTab = async (bucket: string, path: string) => {
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 300);
+    if (error || !data?.signedUrl) { toast.error("Não foi possível abrir"); return; }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+
   const filtered = profiles.filter(p =>
     p.full_name?.toLowerCase().includes(search.toLowerCase()) ||
     p.email?.toLowerCase().includes(search.toLowerCase())
@@ -85,18 +91,27 @@ export default function EmployeeFolders() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap justify-end">
                   <Badge className="bg-success text-success-foreground">
                     <CheckCircle2 className="h-3 w-3 mr-1" />Assinado
                   </Badge>
-                  {p.signed_document_path && (
-                    <Button size="sm" variant="outline" onClick={() =>
-                      downloadFromBucket("payslip-documents", p.signed_document_path,
-                        `${folderName}_holerite_${monthNames[p.reference_month - 1]}_${p.reference_year}.pdf`)
-                    }>
-                      <Download className="h-4 w-4 mr-1" /> Baixar
+                  {p.signed_document_path ? (
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => openInNewTab("payslip-documents", p.signed_document_path)}>
+                        Abrir
+                      </Button>
+                      <Button size="sm" onClick={() =>
+                        downloadFromBucket("payslip-documents", p.signed_document_path,
+                          `${folderName}_holerite_${monthNames[p.reference_month - 1]}_${p.reference_year}.pdf`)
+                      }>
+                        <Download className="h-4 w-4 mr-1" /> Baixar
+                      </Button>
+                    </>
+                  ) : p.signature_path ? (
+                    <Button size="sm" variant="outline" onClick={() => openInNewTab("payslip-signatures", p.signature_path)}>
+                      Ver assinatura
                     </Button>
-                  )}
+                  ) : null}
                 </div>
               </div>
             ))}
@@ -120,11 +135,16 @@ export default function EmployeeFolders() {
                     <p className="text-xs text-muted-foreground">{new Date(d.uploaded_at).toLocaleString("pt-BR")}</p>
                   </div>
                 </div>
-                <Button size="sm" variant="outline" onClick={() =>
-                  downloadFromBucket("employee-documents", d.file_path, `${folderName}_${d.name}`)
-                }>
-                  <Download className="h-4 w-4 mr-1" /> Baixar
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => openInNewTab("employee-documents", d.file_path)}>
+                    Abrir
+                  </Button>
+                  <Button size="sm" onClick={() =>
+                    downloadFromBucket("employee-documents", d.file_path, `${folderName}_${d.name}`)
+                  }>
+                    <Download className="h-4 w-4 mr-1" /> Baixar
+                  </Button>
+                </div>
               </div>
             ))}
           </CardContent>
