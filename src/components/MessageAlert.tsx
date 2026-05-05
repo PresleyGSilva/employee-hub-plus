@@ -47,16 +47,16 @@ export function MessageAlert() {
       setTimeout(() => el.classList.remove("screen-shake"), 700);
     };
 
+    const inChat = pathname.endsWith("/chat");
+
     const ch = supabase
       .channel(`alert-${user.id}`)
       .on("postgres_changes",
         { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${user.id}` },
         async (payload) => {
           const m = payload.new as any;
-          // don't re-alert when user is already viewing this chat
-          if (pathname === "/chat" || pathname === "/admin/chat") return;
+          if (inChat) return;
 
-          // get sender name
           const { data: prof } = await supabase.from("profiles").select("full_name, email").eq("id", m.sender_id).single();
           const name = prof?.full_name || prof?.email || "Alguém";
 
@@ -65,11 +65,23 @@ export function MessageAlert() {
           toast.message(`💬 ${name}`, {
             description: m.content.slice(0, 100),
             duration: 6000,
-            action: {
-              label: "Abrir",
-              onClick: () => navigate("/chat"),
-            },
+            action: { label: "Abrir", onClick: () => navigate("/app/chat") },
             icon: <MessageCircle className="h-4 w-4" />,
+          });
+        })
+      .on("postgres_changes",
+        { event: "INSERT", schema: "public", table: "notifications" },
+        async (payload) => {
+          const n = payload.new as any;
+          // only alert if it's broadcast or directed at this user
+          if (!n.is_broadcast && n.user_id !== user.id) return;
+
+          playNotifSound();
+          toast.message(`🔔 ${n.title || "Nova notificação"}`, {
+            description: (n.message || "").slice(0, 120),
+            duration: 6000,
+            action: { label: "Ver", onClick: () => navigate("/app/notificacoes") },
+            icon: <BellRing className="h-4 w-4" />,
           });
         })
       .subscribe();
