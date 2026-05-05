@@ -183,6 +183,47 @@ export function BirthdayCalendar() {
           </div>
         </div>
       </CardContent>
+
+      <Dialog open={!!selectedPerson} onOpenChange={(o) => !o && setSelectedPerson(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Cake className="h-5 w-5 text-accent" />
+              Aniversariante
+            </DialogTitle>
+          </DialogHeader>
+          {selectedPerson && (() => {
+            const d = new Date(selectedPerson.birth_date + "T00:00:00");
+            const initials = selectedPerson.full_name.split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
+            const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth();
+            return (
+              <div className="flex flex-col items-center text-center gap-4 py-2">
+                <Avatar className="h-32 w-32 ring-4 ring-accent/40 shadow-elegant">
+                  {selectedPerson.avatar_url && <AvatarImage src={selectedPerson.avatar_url} alt={selectedPerson.full_name} />}
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-3xl">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1">
+                  <h3 className="text-xl font-semibold">{selectedPerson.full_name}</h3>
+                  <p className="text-sm text-muted-foreground flex items-center justify-center gap-1.5">
+                    <CalendarDays className="h-4 w-4" />
+                    {d.getDate().toString().padStart(2, "0")} de {fullMonthsPt[d.getMonth()]}
+                  </p>
+                </div>
+                {isToday && (
+                  <div className="rounded-xl bg-gradient-to-r from-accent/25 to-warning/25 border border-accent/40 px-4 py-2 w-full">
+                    <p className="text-sm font-semibold flex items-center justify-center gap-2">
+                      <PartyPopper className="h-4 w-4 text-accent" />
+                      🎉 É hoje! Mande os parabéns!
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
