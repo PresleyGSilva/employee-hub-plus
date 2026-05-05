@@ -42,6 +42,12 @@ export default function EmployeeFolders() {
     URL.revokeObjectURL(url);
   };
 
+  const openInNewTab = async (bucket: string, path: string) => {
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 300);
+    if (error || !data?.signedUrl) { toast.error("Não foi possível abrir"); return; }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+
   const filtered = profiles.filter(p =>
     p.full_name?.toLowerCase().includes(search.toLowerCase()) ||
     p.email?.toLowerCase().includes(search.toLowerCase())
