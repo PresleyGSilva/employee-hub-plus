@@ -283,3 +283,24 @@ function Row({ label, value }: { label: string; value: string }) {
 function fmtDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("pt-BR");
 }
+function StatCard({ label, value, icon: Icon, tone }: { label: string; value: number; icon: any; tone: "primary" | "warning" | "success" }) {
+  const toneCls = {
+    primary: "from-primary/15 to-primary/5 text-primary",
+    warning: "from-warning/15 to-warning/5 text-warning",
+    success: "from-success/15 to-success/5 text-success",
+  }[tone];
+  return (
+    <Card className="overflow-hidden">
+      <CardContent className={`p-4 flex items-center gap-3 bg-gradient-to-br ${toneCls}`}>
+        <div className="h-10 w-10 rounded-xl bg-background/80 flex items-center justify-center">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="text-2xl font-bold text-foreground">{value}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
