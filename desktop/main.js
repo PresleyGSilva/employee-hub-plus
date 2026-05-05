@@ -3,7 +3,7 @@
 // Não precisa reinstalar para receber atualizações.
 const { app, BrowserWindow, shell, Menu } = require("electron");
 
-const APP_URL = "https://cc118663-41f9-4600-bed9-1e39e7fb15c6.lovable.app";
+const APP_URL = "https://ttotuscred.online";
 
 function createWindow() {
   const win = new BrowserWindow({
