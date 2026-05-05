@@ -85,11 +85,8 @@ export default function Auth() {
         </Link>
         <div className="relative">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-            Sua equipe, <br/><span className="text-accent">organizada.</span>
+            Equipe <span className="text-accent">Tottus Cred</span>
           </h1>
-          <p className="text-white/80 text-lg max-w-md">
-            Ponto, holerite, metas e comunicação — tudo em um só lugar.
-          </p>
         </div>
         <p className="text-xs text-white/60 relative">© {new Date().getFullYear()} Tottus Cred</p>
       </div>
