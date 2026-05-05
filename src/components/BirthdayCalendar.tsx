@@ -176,7 +176,7 @@ export function BirthdayCalendar() {
                     >
                       {isToday ? "Hoje 🎂" : `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}`}
                     </span>
-                  </div>
+                  </button>
                 );
               })}
             </div>
