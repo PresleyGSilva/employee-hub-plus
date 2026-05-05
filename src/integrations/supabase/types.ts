@@ -170,12 +170,31 @@ export type Database = {
         }
         Relationships: []
       }
+      positions: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           active: boolean
           base_salary: number | null
           cpf: string | null
           created_at: string
+          default_bonus: number | null
           email: string
           full_name: string
           id: string
@@ -189,6 +208,7 @@ export type Database = {
           base_salary?: number | null
           cpf?: string | null
           created_at?: string
+          default_bonus?: number | null
           email: string
           full_name?: string
           id: string
@@ -202,6 +222,7 @@ export type Database = {
           base_salary?: number | null
           cpf?: string | null
           created_at?: string
+          default_bonus?: number | null
           email?: string
           full_name?: string
           id?: string
