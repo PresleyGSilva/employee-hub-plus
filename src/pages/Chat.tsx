@@ -37,7 +37,7 @@ export default function Chat() {
       if (!active && data?.length) setActive(data[0]);
     } else {
       const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "admin");
-      const ids = (roles ?? []).map((r) => r.user_id);
+      const ids = (roles ?? []).map((r) => r.user_id).filter((id) => id !== user.id);
       if (ids.length === 0) { setContacts([]); return; }
       const { data } = await supabase.from("profiles").select("id, full_name, email").in("id", ids);
       setContacts(data ?? []);
