@@ -22,9 +22,15 @@ export function BirthdayCalendar() {
   useEffect(() => {
     // fire-and-forget: create today's broadcast birthday notifications
     (supabase.rpc("notify_today_birthdays" as any) as any).then(() => {}, () => {});
-    supabase.rpc("get_birthdays_this_month").then(({ data }) => {
-      setList((data as Birthday[]) ?? []);
-    });
+    // fetch ALL active employees with birth_date (full year view)
+    supabase
+      .from("profiles")
+      .select("id, full_name, avatar_url, birth_date")
+      .eq("active", true)
+      .not("birth_date", "is", null)
+      .then(({ data }) => {
+        setList((data as Birthday[]) ?? []);
+      });
   }, []);
 
   const today = new Date();
