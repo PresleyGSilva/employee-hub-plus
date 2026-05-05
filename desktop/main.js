@@ -2,6 +2,7 @@
 // Abre sempre a versão mais recente publicada no Lovable.
 // Não precisa reinstalar para receber atualizações.
 const { app, BrowserWindow, shell, Menu } = require("electron");
+const path = require("path");
 
 const APP_URL = "https://ttotuscred.online";
 
@@ -12,6 +13,7 @@ function createWindow() {
     minWidth: 980,
     minHeight: 640,
     title: "Tottus Cred",
+    icon: path.join(__dirname, process.platform === "win32" ? "icon.ico" : "icon.png"),
     backgroundColor: "#0b0b0f",
     autoHideMenuBar: true,
     webPreferences: {
