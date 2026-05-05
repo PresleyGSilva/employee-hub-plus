@@ -86,7 +86,7 @@ export function BirthdayCalendar() {
             <CalendarDays className="h-4 w-4" />
           </div>
           Calendário de aniversários
-          <span className="text-xs font-normal text-muted-foreground ml-auto">{list.length} no mês</span>
+          <span className="text-xs font-normal text-muted-foreground ml-auto">{byDay.size > 0 ? `${Array.from(byDay.values()).flat().length} em ${monthsPt[monthIndex]}` : `${list.length} no ano`}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="relative">
