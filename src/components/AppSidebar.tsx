@@ -81,9 +81,16 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-3">
+      <SidebarFooter className="border-t border-sidebar-border p-3 space-y-2">
+        {role === "admin" && (
+          <Button variant="outline" size="sm" onClick={() => navigate(isAdminArea ? "/app" : "/admin")}
+            className="w-full justify-start">
+            {isAdminArea ? <User className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
+            {!collapsed && <span className="ml-2">{isAdminArea ? "Ver como funcionário" : "Painel Admin"}</span>}
+          </Button>
+        )}
         {!collapsed && user && (
-          <div className="text-xs text-sidebar-foreground/70 px-2 pb-2 truncate">
+          <div className="text-xs text-sidebar-foreground/70 px-2 truncate">
             {user.email}
           </div>
         )}
