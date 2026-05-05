@@ -10,16 +10,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Trash2, Calculator } from "lucide-react";
+import { Plus, Trash2, Calculator, Check, X, Palmtree, Clock, CheckCircle2 } from "lucide-react";
 import { fmtBRL } from "@/lib/payroll";
 import { calcVacation } from "@/lib/vacation";
 import { useAuth } from "@/contexts/AuthContext";
 
 const statusLabels: Record<string, string> = {
-  scheduled: "Programada",
+  requested: "Aguardando",
+  scheduled: "Aprovada",
   in_progress: "Em gozo",
   completed: "Concluída",
   cancelled: "Cancelada",
+  rejected: "Recusada",
+};
+const statusCls: Record<string, string> = {
+  requested:   "bg-warning/15 text-warning border-warning/40",
+  scheduled:   "bg-success/15 text-success border-success/40",
+  in_progress: "bg-primary/15 text-primary border-primary/40",
+  completed:   "bg-muted text-muted-foreground",
+  cancelled:   "bg-muted text-muted-foreground",
+  rejected:    "bg-destructive/15 text-destructive border-destructive/40",
 };
 
 export default function AdminVacations() {
@@ -105,17 +115,80 @@ export default function AdminVacations() {
     toast.success("Excluído"); load();
   };
 
+  const approve = async (id: string) => {
+    const { error } = await supabase.from("vacations").update({ status: "scheduled" }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Férias aprovadas"); load();
+  };
+  const reject = async (id: string) => {
+    if (!confirm("Recusar esta solicitação?")) return;
+    const { error } = await supabase.from("vacations").update({ status: "rejected" }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Solicitação recusada"); load();
+  };
+
   const profileName = (id: string) => profiles.find((p) => p.id === id)?.full_name ?? "—";
+
+  const requested = list.filter(v => v.status === "requested");
+  const others = list.filter(v => v.status !== "requested");
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Férias</h1>
-        <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" /> Nova férias</Button>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-elegant">
+            <Palmtree className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">Férias</h1>
+            <p className="text-sm text-muted-foreground">Aprove solicitações e gerencie períodos</p>
+          </div>
+        </div>
+        <Button onClick={() => setOpen(true)} className="gradient-primary text-primary-foreground border-0">
+          <Plus className="h-4 w-4 mr-2" /> Nova férias
+        </Button>
       </div>
 
+      <div className="grid gap-3 sm:grid-cols-3">
+        <StatCard label="Aguardando" value={requested.length} icon={Clock} tone="warning" />
+        <StatCard label="Aprovadas / em gozo" value={list.filter(v => ["scheduled","in_progress"].includes(v.status)).length} icon={CheckCircle2} tone="success" />
+        <StatCard label="Total registros" value={list.length} icon={Palmtree} tone="primary" />
+      </div>
+
+      {requested.length > 0 && (
+        <Card className="border-warning/40">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Clock className="h-4 w-4 text-warning" /> Solicitações pendentes ({requested.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {requested.map((v) => (
+              <div key={v.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border bg-warning/5 flex-wrap">
+                <div className="min-w-0">
+                  <p className="font-semibold">{profileName(v.user_id)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {fmtDate(v.vacation_start)} → {fmtDate(v.vacation_end)} • {v.vacation_days} dias
+                    {v.sold_days > 0 ? ` + ${v.sold_days} vendidos` : ""} • Líquido {fmtBRL(Number(v.total_net))}
+                  </p>
+                  {v.notes && <p className="text-xs italic text-muted-foreground mt-1">"{v.notes}"</p>}
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => reject(v.id)}>
+                    <X className="h-4 w-4 mr-1" /> Recusar
+                  </Button>
+                  <Button size="sm" onClick={() => approve(v.id)} className="bg-success text-success-foreground hover:bg-success/90">
+                    <Check className="h-4 w-4 mr-1" /> Aprovar
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
-        <CardHeader><CardTitle>Registros ({list.length})</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">Histórico ({others.length})</CardTitle></CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
@@ -129,14 +202,14 @@ export default function AdminVacations() {
                 <TableHead></TableHead>
               </TableRow></TableHeader>
               <TableBody>
-                {list.map((v) => (
+                {others.map((v) => (
                   <TableRow key={v.id}>
                     <TableCell className="font-medium">{profileName(v.user_id)}</TableCell>
                     <TableCell className="text-xs">{fmtDate(v.acquisition_start)} → {fmtDate(v.acquisition_end)}</TableCell>
                     <TableCell className="text-xs">{fmtDate(v.vacation_start)} → {fmtDate(v.vacation_end)}</TableCell>
                     <TableCell>{v.vacation_days}{v.sold_days > 0 ? ` + ${v.sold_days} vend.` : ""}</TableCell>
                     <TableCell className="font-bold">{fmtBRL(Number(v.total_net))}</TableCell>
-                    <TableCell><Badge variant="outline">{statusLabels[v.status]}</Badge></TableCell>
+                    <TableCell><Badge variant="outline" className={statusCls[v.status]}>{statusLabels[v.status]}</Badge></TableCell>
                     <TableCell>
                       <Button size="icon" variant="ghost" onClick={() => remove(v.id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
@@ -144,7 +217,7 @@ export default function AdminVacations() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {list.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhuma férias registrada</TableCell></TableRow>}
+                {others.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhum registro</TableCell></TableRow>}
               </TableBody>
             </Table>
           </div>
@@ -210,3 +283,24 @@ function Row({ label, value }: { label: string; value: string }) {
 function fmtDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("pt-BR");
 }
+function StatCard({ label, value, icon: Icon, tone }: { label: string; value: number; icon: any; tone: "primary" | "warning" | "success" }) {
+  const toneCls = {
+    primary: "from-primary/15 to-primary/5 text-primary",
+    warning: "from-warning/15 to-warning/5 text-warning",
+    success: "from-success/15 to-success/5 text-success",
+  }[tone];
+  return (
+    <Card className="overflow-hidden">
+      <CardContent className={`p-4 flex items-center gap-3 bg-gradient-to-br ${toneCls}`}>
+        <div className="h-10 w-10 rounded-xl bg-background/80 flex items-center justify-center">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="text-2xl font-bold text-foreground">{value}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
