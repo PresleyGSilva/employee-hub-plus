@@ -9,7 +9,8 @@ import { fmtMinutes } from "@/lib/payroll";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { GoalsPerformance } from "@/components/GoalsPerformance";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { TrendingUp } from "lucide-react";
 
 export default function EmployeeHome() {
   const { user } = useAuth();
