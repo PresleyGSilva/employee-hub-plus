@@ -47,16 +47,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border px-4 py-5">
-        <div className="flex items-center gap-2">
-          <img src="/logo-tottus.png" alt="Tottus Cred" className="h-9 w-9 object-contain" />
+      <SidebarHeader className="border-b border-sidebar-border px-4 py-4">
+        <div className="flex flex-col items-center gap-1">
+          <img src="/logo-tottus.png" alt="Tottus Cred" className={collapsed ? "h-9 w-9 object-contain" : "h-20 w-20 object-contain"} />
           {!collapsed && (
-            <div className="flex flex-col leading-tight">
-              <span className="font-bold text-sidebar-foreground" style={{ fontFamily: "Sora" }}>Tottus Cred</span>
-              <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
-                {isAdminArea ? "Administrador" : role === "admin" ? "Modo Funcionário" : "Funcionário"}
-              </span>
-            </div>
+            <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
+              {isAdminArea ? "Administrador" : role === "admin" ? "Modo Funcionário" : "Funcionário"}
+            </span>
           )}
         </div>
       </SidebarHeader>
