@@ -115,6 +115,18 @@ export default function AdminVacations() {
     toast.success("Excluído"); load();
   };
 
+  const approve = async (id: string) => {
+    const { error } = await supabase.from("vacations").update({ status: "scheduled" }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Férias aprovadas"); load();
+  };
+  const reject = async (id: string) => {
+    if (!confirm("Recusar esta solicitação?")) return;
+    const { error } = await supabase.from("vacations").update({ status: "rejected" }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Solicitação recusada"); load();
+  };
+
   const profileName = (id: string) => profiles.find((p) => p.id === id)?.full_name ?? "—";
 
   return (
