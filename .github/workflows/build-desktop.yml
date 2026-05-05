@@ -37,14 +37,3 @@ jobs:
         with:
           name: TottusCred-Windows-Setup
           path: desktop/dist/*.exe
-
-      - name: Publish GitHub Release
-        if: github.ref == 'refs/heads/main'
-        continue-on-error: true
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: desktop-v${{ github.run_number }}
-          name: Tottus Cred Desktop v${{ github.run_number }}
-          files: desktop/dist/*.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
