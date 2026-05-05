@@ -20,6 +20,8 @@ import AdminTimeEntries from "./pages/admin/AdminTimeEntries";
 import AdminPayslips from "./pages/admin/AdminPayslips";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminGoals from "./pages/admin/AdminGoals";
+import Chat from "./pages/Chat";
+import { MessageAlert } from "./components/MessageAlert";
 
 const queryClient = new QueryClient();
 
@@ -30,9 +32,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <MessageAlert />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/chat" element={<AppLayout />}>
+              <Route index element={<Chat />} />
+            </Route>
 
             <Route path="/app" element={<AppLayout />}>
               <Route index element={<EmployeeHome />} />
@@ -41,6 +47,7 @@ const App = () => (
               <Route path="documentos" element={<Documents />} />
               <Route path="notificacoes" element={<Notifications />} />
               <Route path="metas" element={<Goals />} />
+              <Route path="chat" element={<Chat />} />
             </Route>
 
             <Route path="/admin" element={<AppLayout requireAdmin />}>
@@ -50,6 +57,7 @@ const App = () => (
               <Route path="holerites" element={<AdminPayslips />} />
               <Route path="notificacoes" element={<AdminNotifications />} />
               <Route path="metas" element={<AdminGoals />} />
+              <Route path="chat" element={<Chat />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
