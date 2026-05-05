@@ -433,6 +433,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_birthdays_this_month: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          birth_date: string
+          full_name: string
+          id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
