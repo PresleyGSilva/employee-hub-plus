@@ -22,9 +22,15 @@ export function BirthdayCalendar() {
   useEffect(() => {
     // fire-and-forget: create today's broadcast birthday notifications
     (supabase.rpc("notify_today_birthdays" as any) as any).then(() => {}, () => {});
-    supabase.rpc("get_birthdays_this_month").then(({ data }) => {
-      setList((data as Birthday[]) ?? []);
-    });
+    // fetch ALL active employees with birth_date (full year view)
+    supabase
+      .from("profiles")
+      .select("id, full_name, avatar_url, birth_date")
+      .eq("active", true)
+      .not("birth_date", "is", null)
+      .then(({ data }) => {
+        setList((data as Birthday[]) ?? []);
+      });
   }, []);
 
   const today = new Date();
@@ -80,7 +86,7 @@ export function BirthdayCalendar() {
             <CalendarDays className="h-4 w-4" />
           </div>
           Calendário de aniversários
-          <span className="text-xs font-normal text-muted-foreground ml-auto">{list.length} no mês</span>
+          <span className="text-xs font-normal text-muted-foreground ml-auto">{byDay.size > 0 ? `${Array.from(byDay.values()).flat().length} em ${monthsPt[monthIndex]}` : `${list.length} no ano`}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="relative">
