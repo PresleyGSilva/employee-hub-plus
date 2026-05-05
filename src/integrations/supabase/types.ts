@@ -52,6 +52,7 @@ export type Database = {
           reference_year: number
           target_value: number | null
           title: string
+          updated_at: string
         }
         Insert: {
           created_at?: string
@@ -63,6 +64,7 @@ export type Database = {
           reference_year: number
           target_value?: number | null
           title: string
+          updated_at?: string
         }
         Update: {
           created_at?: string
@@ -74,6 +76,7 @@ export type Database = {
           reference_year?: number
           target_value?: number | null
           title?: string
+          updated_at?: string
         }
         Relationships: []
       }

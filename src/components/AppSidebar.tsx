@@ -83,8 +83,8 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border p-3 space-y-2">
         {role === "admin" && (
-          <Button variant="outline" size="sm" onClick={() => navigate(isAdminArea ? "/app" : "/admin")}
-            className="w-full justify-start">
+          <Button size="sm" onClick={() => navigate(isAdminArea ? "/app" : "/admin")}
+            className="w-full justify-start bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/80 border border-sidebar-border">
             {isAdminArea ? <User className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
             {!collapsed && <span className="ml-2">{isAdminArea ? "Ver como funcionário" : "Painel Admin"}</span>}
           </Button>
@@ -95,7 +95,7 @@ export function AppSidebar() {
           </div>
         )}
         <Button variant="ghost" size="sm" onClick={handleSignOut}
-          className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent">
+          className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
           <LogOut className="h-4 w-4" />
           {!collapsed && <span className="ml-2">Sair</span>}
         </Button>

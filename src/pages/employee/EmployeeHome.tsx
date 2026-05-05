@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { fmtMinutes } from "@/lib/payroll";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { GoalsPerformance } from "@/components/GoalsPerformance";
 
 export default function EmployeeHome() {
   const { user } = useAuth();
@@ -81,6 +82,8 @@ export default function EmployeeHome() {
           )}
         </CardContent>
       </Card>
+
+      <GoalsPerformance compact />
     </div>
   );
 }
