@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Clock, FileText, Target } from "lucide-react";
 import { GoalsPerformance } from "@/components/GoalsPerformance";
+import { BirthdaysCard } from "@/components/BirthdaysCard";
 
 export default function AdminHome() {
   const [stats, setStats] = useState({ employees: 0, todayClocked: 0, pendingPayslips: 0, goals: 0 });
@@ -49,6 +50,7 @@ export default function AdminHome() {
           </Card>
         ))}
       </div>
+      <BirthdaysCard />
       <GoalsPerformance />
       <Card>
         <CardHeader><CardTitle>Bem-vindo</CardTitle></CardHeader>
