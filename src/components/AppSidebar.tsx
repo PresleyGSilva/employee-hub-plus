@@ -51,7 +51,11 @@ export function AppSidebar() {
           </div>
           {!collapsed && (
             <div className="flex flex-col leading-tight">
-              <span className="font-bold text-sidebar-foreground" style={{ fontFamily: "Sora" }}>WorkFlow</span>
+              <span className="font-bold text-sidebar-foreground" style={{ fontFamily: "Sora" }}>Tottus Cred</span>
+          </div>
+          {!collapsed && (
+            <div className="flex flex-col leading-tight">
+              <span className="font-bold text-sidebar-foreground" style={{ fontFamily: "Sora" }}>Tottus Cred</span>
               <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
                 {role === "admin" ? "Administrador" : "Funcionário"}
               </span>
