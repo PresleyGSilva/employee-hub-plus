@@ -1,15 +1,15 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { fmtBRL, fmtMinutes, monthNames } from "@/lib/payroll";
 import { toast } from "sonner";
-import SignatureCanvas from "react-signature-canvas";
-import { FileText, PenTool, CheckCircle2, Download, Upload } from "lucide-react";
+import { FileText, CheckCircle2, Download, Upload, ShieldCheck } from "lucide-react";
 import { generatePayslipPdf } from "@/lib/payslipPdf";
+import { checkGovBrSignature } from "@/lib/govSignature";
 
 export default function Payslips() {
   const { user } = useAuth();
