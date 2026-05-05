@@ -51,7 +51,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border px-4 py-4">
         <div className="flex flex-col items-center gap-1">
-          <img src="/logo-tottus.png" alt="Tottus Cred" className={collapsed ? "h-9 w-9 object-contain" : "h-20 w-20 object-contain"} />
+          <img src="/logo-tottus.png" alt="Tottus Cred" className={collapsed ? "h-10 w-10 object-contain" : "h-32 w-32 object-contain"} />
           {!collapsed && (
             <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
               {isAdminArea ? "Administrador" : role === "admin" ? "Modo Funcionário" : "Funcionário"}
