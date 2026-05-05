@@ -265,6 +265,9 @@ export type Database = {
       }
       time_entries: {
         Row: {
+          balance_minutes: number | null
+          break_in: string | null
+          break_out: string | null
           clock_in: string | null
           clock_out: string | null
           created_at: string
@@ -272,6 +275,8 @@ export type Database = {
           id: string
           is_absent: boolean
           late_minutes: number | null
+          lunch_in: string | null
+          lunch_out: string | null
           notes: string | null
           overtime_minutes: number | null
           updated_at: string
@@ -279,6 +284,9 @@ export type Database = {
           worked_minutes: number | null
         }
         Insert: {
+          balance_minutes?: number | null
+          break_in?: string | null
+          break_out?: string | null
           clock_in?: string | null
           clock_out?: string | null
           created_at?: string
@@ -286,6 +294,8 @@ export type Database = {
           id?: string
           is_absent?: boolean
           late_minutes?: number | null
+          lunch_in?: string | null
+          lunch_out?: string | null
           notes?: string | null
           overtime_minutes?: number | null
           updated_at?: string
@@ -293,6 +303,9 @@ export type Database = {
           worked_minutes?: number | null
         }
         Update: {
+          balance_minutes?: number | null
+          break_in?: string | null
+          break_out?: string | null
           clock_in?: string | null
           clock_out?: string | null
           created_at?: string
@@ -300,6 +313,8 @@ export type Database = {
           id?: string
           is_absent?: boolean
           late_minutes?: number | null
+          lunch_in?: string | null
+          lunch_out?: string | null
           notes?: string | null
           overtime_minutes?: number | null
           updated_at?: string
