@@ -9,6 +9,7 @@ import { fmtMinutes } from "@/lib/payroll";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { GoalsPerformance } from "@/components/GoalsPerformance";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 export default function EmployeeHome() {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ export default function EmployeeHome() {
   const [unread, setUnread] = useState(0);
   const [pendingPayslips, setPendingPayslips] = useState(0);
   const [activeGoals, setActiveGoals] = useState(0);
+  const [earnings, setEarnings] = useState<{ label: string; valor: number }[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -31,6 +33,18 @@ export default function EmployeeHome() {
       ]);
       setProfile(p); setTodayEntry(t);
       setUnread(n ?? 0); setPendingPayslips(pay ?? 0); setActiveGoals(g ?? 0);
+
+      const { data: ps } = await supabase
+        .from("payslips")
+        .select("reference_year,reference_month,total_net")
+        .eq("user_id", user.id)
+        .order("reference_year", { ascending: true })
+        .order("reference_month", { ascending: true });
+      const months = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+      setEarnings((ps ?? []).slice(-12).map(r => ({
+        label: `${months[(r.reference_month ?? 1) - 1]}/${String(r.reference_year).slice(-2)}`,
+        valor: Number(r.total_net ?? 0),
+      })));
     })();
   }, [user]);
 
@@ -78,6 +92,31 @@ export default function EmployeeHome() {
             <div className="text-center py-6">
               <p className="text-muted-foreground mb-3">Você ainda não bateu o ponto hoje.</p>
               <Link to="/app/ponto"><Button className="gradient-primary text-primary-foreground border-0">Bater ponto agora <ArrowRight className="ml-2 h-4 w-4" /></Button></Link>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Meus ganhos por mês</CardTitle></CardHeader>
+        <CardContent>
+          {earnings.length === 0 ? (
+            <p className="text-center text-sm text-muted-foreground py-8">Nenhum holerite registrado ainda.</p>
+          ) : (
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={earnings} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12}
+                    tickFormatter={(v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })} />
+                  <Tooltip
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }}
+                    formatter={(v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                  />
+                  <Bar dataKey="valor" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           )}
         </CardContent>
