@@ -135,11 +135,16 @@ export default function EmployeeFolders() {
                     <p className="text-xs text-muted-foreground">{new Date(d.uploaded_at).toLocaleString("pt-BR")}</p>
                   </div>
                 </div>
-                <Button size="sm" variant="outline" onClick={() =>
-                  downloadFromBucket("employee-documents", d.file_path, `${folderName}_${d.name}`)
-                }>
-                  <Download className="h-4 w-4 mr-1" /> Baixar
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => openInNewTab("employee-documents", d.file_path)}>
+                    Abrir
+                  </Button>
+                  <Button size="sm" onClick={() =>
+                    downloadFromBucket("employee-documents", d.file_path, `${folderName}_${d.name}`)
+                  }>
+                    <Download className="h-4 w-4 mr-1" /> Baixar
+                  </Button>
+                </div>
               </div>
             ))}
           </CardContent>
