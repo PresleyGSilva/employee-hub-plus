@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { FolderOpen, FileText, Download, ArrowLeft, CheckCircle2, Search, User } from "lucide-react";
+import { FolderOpen, FileText, Download, ArrowLeft, CheckCircle2, Search, User, ShieldCheck } from "lucide-react";
 import { monthNames, fmtBRL } from "@/lib/payroll";
 import { toast } from "sonner";
 
