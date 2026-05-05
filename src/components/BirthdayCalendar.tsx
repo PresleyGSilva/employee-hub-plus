@@ -142,12 +142,14 @@ export function BirthdayCalendar() {
                 const initials = b.full_name.split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
                 const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth();
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={b.id}
+                    onClick={() => setSelectedPerson(b)}
                     className={cn(
-                      "flex items-center gap-3 p-2.5 rounded-lg transition-smooth",
+                      "w-full text-left flex items-center gap-3 p-2.5 rounded-lg transition-smooth cursor-pointer",
                       isToday
-                        ? "bg-gradient-to-r from-accent/20 to-warning/20 border border-accent/40"
+                        ? "bg-gradient-to-r from-accent/20 to-warning/20 border border-accent/40 hover:from-accent/30 hover:to-warning/30"
                         : "hover:bg-muted/50 border border-transparent"
                     )}
                   >
