@@ -1,0 +1,30 @@
+{
+  "name": "tottus-cred-desktop",
+  "version": "1.0.0",
+  "description": "Tottus Cred Desktop",
+  "main": "main.js",
+  "author": "Tottus Promotora LTDA",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --publish never"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.tottuscred.desktop",
+    "productName": "Tottus Cred",
+    "files": ["main.js", "preload.js"],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Tottus Cred"
+    }
+  }
+}
