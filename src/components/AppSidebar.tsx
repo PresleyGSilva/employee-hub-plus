@@ -6,7 +6,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
-  LayoutDashboard, Clock, FileText, Bell, Target, Users, FolderOpen, LogOut,
+  LayoutDashboard, Clock, FileText, Bell, Target, Users, FolderOpen, LogOut, Shield, User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -35,7 +35,8 @@ export function AppSidebar() {
   const { role, signOut, user } = useAuth();
   const navigate = useNavigate();
 
-  const items = role === "admin" ? adminItems : employeeItems;
+  const isAdminArea = pathname.startsWith("/admin");
+  const items = isAdminArea ? adminItems : employeeItems;
 
   const handleSignOut = async () => {
     await signOut();
