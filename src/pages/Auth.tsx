@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import authBg from "@/assets/auth-bg.jpg";
 
 const signInSchema = z.object({
   email: z.string().trim().email("E-mail inválido").max(255),
