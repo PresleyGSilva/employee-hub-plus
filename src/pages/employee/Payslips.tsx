@@ -16,7 +16,6 @@ export default function Payslips() {
   const [list, setList] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
   const [open, setOpen] = useState<any>(null);
-  const sigRef = useRef<SignatureCanvas>(null);
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
