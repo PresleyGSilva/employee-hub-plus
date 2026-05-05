@@ -1,0 +1,52 @@
+// Tottus Cred — Desktop wrapper (modo Online)
+// Abre sempre a versão mais recente publicada no Lovable.
+// Não precisa reinstalar para receber atualizações.
+const { app, BrowserWindow, shell, Menu } = require("electron");
+
+const APP_URL = "https://cc118663-41f9-4600-bed9-1e39e7fb15c6.lovable.app";
+
+function createWindow() {
+  const win = new BrowserWindow({
+    width: 1280,
+    height: 820,
+    minWidth: 980,
+    minHeight: 640,
+    title: "Tottus Cred",
+    backgroundColor: "#0b0b0f",
+    autoHideMenuBar: true,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  Menu.setApplicationMenu(null);
+
+  // Sempre carrega a versão online → sem necessidade de reinstalar para atualizar
+  win.loadURL(APP_URL);
+
+  // Links externos abrem no navegador padrão
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (!url.startsWith(APP_URL)) {
+      shell.openExternal(url);
+      return { action: "deny" };
+    }
+    return { action: "allow" };
+  });
+
+  // Atalho F5 para recarregar manualmente
+  win.webContents.on("before-input-event", (_e, input) => {
+    if (input.key === "F5") win.reload();
+    if (input.key === "F11") win.setFullScreen(!win.isFullScreen());
+  });
+}
+
+app.whenReady().then(createWindow);
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") app.quit();
+});
+
+app.on("activate", () => {
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
