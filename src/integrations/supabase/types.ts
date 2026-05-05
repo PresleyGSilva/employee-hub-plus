@@ -229,6 +229,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          overtime_hour_rate: number
           phone: string | null
           pix_key: string | null
           position: string | null
@@ -244,6 +245,7 @@ export type Database = {
           email: string
           full_name?: string
           id: string
+          overtime_hour_rate?: number
           phone?: string | null
           pix_key?: string | null
           position?: string | null
@@ -259,6 +261,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          overtime_hour_rate?: number
           phone?: string | null
           pix_key?: string | null
           position?: string | null
