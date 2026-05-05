@@ -41,9 +41,27 @@ export default function Payslips() {
     if (!user || !e.target.files?.[0]) return;
     const file = e.target.files[0];
     if (file.size > 10 * 1024 * 1024) { toast.error("Máximo 10MB"); return; }
+
     setBusy(true);
+    const check = await checkGovBrSignature(file);
+    if (!check.isPdf) {
+      setBusy(false); e.target.value = "";
+      toast.error("Envie o arquivo PDF assinado pelo gov.br");
+      return;
+    }
+    if (!check.hasDigitalSignature) {
+      setBusy(false); e.target.value = "";
+      toast.error("Este PDF não contém assinatura digital. Assine em assinador.iti.br (gov.br) e envie novamente.");
+      return;
+    }
+    if (!check.isGovBr) {
+      setBusy(false); e.target.value = "";
+      toast.error("Assinatura digital encontrada, mas não foi reconhecida como gov.br / ICP-Brasil. Use o assinador gov.br.");
+      return;
+    }
+
     const path = `${user.id}/${p.id}-assinado.pdf`;
-    const { error: upErr } = await supabase.storage.from("payslip-documents").upload(path, file, { upsert: true, contentType: file.type });
+    const { error: upErr } = await supabase.storage.from("payslip-documents").upload(path, file, { upsert: true, contentType: "application/pdf" });
     if (upErr) { setBusy(false); toast.error(upErr.message); return; }
     const { error } = await supabase.from("payslips").update({
       status: "signed", signed_document_path: path, signed_at: new Date().toISOString(),
@@ -51,24 +69,7 @@ export default function Payslips() {
     setBusy(false);
     e.target.value = "";
     if (error) toast.error(error.message);
-    else { toast.success("Holerite assinado enviado!"); setOpen(null); load(); }
-  };
-
-  const signWithDraw = async () => {
-    if (!user || !open || !sigRef.current) return;
-    if (sigRef.current.isEmpty()) { toast.error("Desenhe sua assinatura"); return; }
-    setBusy(true);
-    const dataUrl = sigRef.current.toDataURL("image/png");
-    const blob = await (await fetch(dataUrl)).blob();
-    const path = `${user.id}/${open.id}.png`;
-    const { error: upErr } = await supabase.storage.from("payslip-signatures").upload(path, blob, { upsert: true, contentType: "image/png" });
-    if (upErr) { setBusy(false); toast.error(upErr.message); return; }
-    const { error } = await supabase.from("payslips").update({
-      status: "signed", signature_path: path, signed_at: new Date().toISOString(),
-    }).eq("id", open.id);
-    setBusy(false);
-    if (error) toast.error(error.message);
-    else { toast.success("Assinatura registrada!"); setOpen(null); load(); }
+    else { toast.success("Holerite assinado pelo gov.br enviado!"); setOpen(null); load(); }
   };
 
   return (
