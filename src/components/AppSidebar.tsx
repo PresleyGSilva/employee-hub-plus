@@ -54,7 +54,7 @@ export function AppSidebar() {
             <div className="flex flex-col leading-tight">
               <span className="font-bold text-sidebar-foreground" style={{ fontFamily: "Sora" }}>Tottus Cred</span>
               <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
-                {role === "admin" ? "Administrador" : "Funcionário"}
+                {isAdminArea ? "Administrador" : role === "admin" ? "Modo Funcionário" : "Funcionário"}
               </span>
             </div>
           )}
