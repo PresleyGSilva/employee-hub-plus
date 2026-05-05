@@ -98,25 +98,80 @@ export default function EmployeeHome() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader><CardTitle>Meus ganhos por mês</CardTitle></CardHeader>
-        <CardContent>
+      <Card className="overflow-hidden border-0 shadow-elegant relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 pointer-events-none" />
+        <CardHeader className="relative flex flex-row items-start justify-between gap-4 pb-2">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Meus ganhos</p>
+            <CardTitle className="text-2xl font-bold mt-1">
+              {(earnings.reduce((s, e) => s + e.valor, 0)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">Últimos {earnings.length} {earnings.length === 1 ? "mês" : "meses"}</p>
+          </div>
+          {earnings.length >= 2 && (() => {
+            const last = earnings[earnings.length - 1].valor;
+            const prev = earnings[earnings.length - 2].valor || 1;
+            const diff = ((last - prev) / prev) * 100;
+            const up = diff >= 0;
+            return (
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${up ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}`}>
+                <TrendingUp className={`h-3.5 w-3.5 ${up ? "" : "rotate-180"}`} />
+                {up ? "+" : ""}{diff.toFixed(1)}%
+              </div>
+            );
+          })()}
+        </CardHeader>
+        <CardContent className="relative">
           {earnings.length === 0 ? (
             <p className="text-center text-sm text-muted-foreground py-8">Nenhum holerite registrado ainda.</p>
           ) : (
-            <div className="h-64 w-full">
+            <div className="h-72 w-full -ml-2">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={earnings} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12}
-                    tickFormatter={(v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })} />
-                  <Tooltip
-                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }}
-                    formatter={(v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                <AreaChart data={earnings} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="earnGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.45} />
+                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} opacity={0.5} />
+                  <XAxis
+                    dataKey="label"
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
                   />
-                  <Bar dataKey="valor" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-                </BarChart>
+                  <YAxis
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                    width={70}
+                    tickFormatter={(v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0, notation: "compact" })}
+                  />
+                  <Tooltip
+                    cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: "4 4" }}
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 12,
+                      boxShadow: "var(--shadow-lg)",
+                      fontSize: 12,
+                    }}
+                    labelStyle={{ color: "hsl(var(--muted-foreground))", fontWeight: 500, marginBottom: 4 }}
+                    formatter={(v: number) => [v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }), "Ganho"]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="valor"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2.5}
+                    fill="url(#earnGrad)"
+                    dot={{ fill: "hsl(var(--background))", stroke: "hsl(var(--primary))", strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, fill: "hsl(var(--primary))", stroke: "hsl(var(--background))", strokeWidth: 3 }}
+                  />
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           )}
