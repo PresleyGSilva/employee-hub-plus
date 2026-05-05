@@ -10,16 +10,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Trash2, Calculator } from "lucide-react";
+import { Plus, Trash2, Calculator, Check, X, Palmtree, Clock, CheckCircle2 } from "lucide-react";
 import { fmtBRL } from "@/lib/payroll";
 import { calcVacation } from "@/lib/vacation";
 import { useAuth } from "@/contexts/AuthContext";
 
 const statusLabels: Record<string, string> = {
-  scheduled: "Programada",
+  requested: "Aguardando",
+  scheduled: "Aprovada",
   in_progress: "Em gozo",
   completed: "Concluída",
   cancelled: "Cancelada",
+  rejected: "Recusada",
+};
+const statusCls: Record<string, string> = {
+  requested:   "bg-warning/15 text-warning border-warning/40",
+  scheduled:   "bg-success/15 text-success border-success/40",
+  in_progress: "bg-primary/15 text-primary border-primary/40",
+  completed:   "bg-muted text-muted-foreground",
+  cancelled:   "bg-muted text-muted-foreground",
+  rejected:    "bg-destructive/15 text-destructive border-destructive/40",
 };
 
 export default function AdminVacations() {
