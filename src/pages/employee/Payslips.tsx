@@ -133,35 +133,24 @@ export default function Payslips() {
                   <div className="space-y-4">
                     <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 space-y-3">
                       <p className="text-sm font-semibold flex items-center gap-2">
-                        <FileText className="h-4 w-4" /> Opção 1 — Termo de Quitação (PDF)
+                        <ShieldCheck className="h-4 w-4 text-primary" /> Assinatura digital gov.br (obrigatória)
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        Baixe o PDF, assine (digital ou impresso) e faça upload de volta para enviar ao administrador.
-                      </p>
-                      <div className="flex flex-wrap gap-2">
+                      <ol className="text-xs text-muted-foreground list-decimal pl-4 space-y-1">
+                        <li>Baixe o Termo de Quitação em PDF abaixo.</li>
+                        <li>Acesse <a href="https://assinador.iti.br" target="_blank" rel="noreferrer" className="text-primary underline">assinador.iti.br</a> e assine com sua conta gov.br.</li>
+                        <li>Envie aqui o PDF assinado. Apenas PDFs com assinatura gov.br são aceitos.</li>
+                      </ol>
+                      <div className="flex flex-wrap gap-2 pt-1">
                         <Button size="sm" variant="outline" onClick={() => downloadPdf(open)}>
                           <Download className="h-4 w-4 mr-2" /> Baixar Termo
                         </Button>
                         <label>
-                          <input type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden"
+                          <input type="file" accept="application/pdf,.pdf" className="hidden"
                             onChange={(e) => uploadSigned(e, open)} disabled={busy} />
                           <Button size="sm" asChild disabled={busy} className="gradient-primary text-primary-foreground border-0">
-                            <span className="cursor-pointer"><Upload className="h-4 w-4 mr-2" /> Enviar assinado</span>
+                            <span className="cursor-pointer"><Upload className="h-4 w-4 mr-2" /> Enviar PDF assinado (gov.br)</span>
                           </Button>
                         </label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium flex items-center gap-2"><PenTool className="h-4 w-4" /> Opção 2 — Assinar aqui</p>
-                      <div className="border-2 border-dashed rounded-lg bg-background">
-                        <SignatureCanvas ref={sigRef} canvasProps={{ className: "w-full h-32 rounded-lg" }} />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => sigRef.current?.clear()}>Limpar</Button>
-                        <Button size="sm" onClick={signWithDraw} disabled={busy} className="gradient-primary text-primary-foreground border-0">
-                          Assinar agora
-                        </Button>
                       </div>
                     </div>
                   </div>
