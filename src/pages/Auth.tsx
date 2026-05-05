@@ -75,8 +75,11 @@ export default function Auth() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* left brand */}
-      <div className="md:w-1/2 gradient-hero text-white p-8 md:p-14 flex flex-col justify-between relative overflow-hidden">
-        <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full blur-3xl opacity-30" style={{ background: "hsl(var(--accent))" }} />
+      <div
+        className="md:w-1/2 text-white p-8 md:p-14 flex flex-col justify-between relative overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: `url(${authBg})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/70 via-primary/40 to-background/60" />
         <Link to="/" className="flex items-center justify-center relative">
           <img src="/logo-tottus.png" alt="Tottus Cred" className="h-40 w-40 md:h-52 md:w-52 object-contain drop-shadow-2xl" />
         </Link>
