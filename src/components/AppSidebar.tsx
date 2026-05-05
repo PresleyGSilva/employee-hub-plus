@@ -6,7 +6,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
-  LayoutDashboard, Clock, FileText, Bell, Target, Users, FolderOpen, LogOut,
+  LayoutDashboard, Clock, FileText, Bell, Target, Users, FolderOpen, LogOut, Shield, User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -35,7 +35,8 @@ export function AppSidebar() {
   const { role, signOut, user } = useAuth();
   const navigate = useNavigate();
 
-  const items = role === "admin" ? adminItems : employeeItems;
+  const isAdminArea = pathname.startsWith("/admin");
+  const items = isAdminArea ? adminItems : employeeItems;
 
   const handleSignOut = async () => {
     await signOut();
@@ -53,7 +54,7 @@ export function AppSidebar() {
             <div className="flex flex-col leading-tight">
               <span className="font-bold text-sidebar-foreground" style={{ fontFamily: "Sora" }}>Tottus Cred</span>
               <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
-                {role === "admin" ? "Administrador" : "Funcionário"}
+                {isAdminArea ? "Administrador" : role === "admin" ? "Modo Funcionário" : "Funcionário"}
               </span>
             </div>
           )}
@@ -80,9 +81,16 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-3">
+      <SidebarFooter className="border-t border-sidebar-border p-3 space-y-2">
+        {role === "admin" && (
+          <Button variant="outline" size="sm" onClick={() => navigate(isAdminArea ? "/app" : "/admin")}
+            className="w-full justify-start">
+            {isAdminArea ? <User className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
+            {!collapsed && <span className="ml-2">{isAdminArea ? "Ver como funcionário" : "Painel Admin"}</span>}
+          </Button>
+        )}
         {!collapsed && user && (
-          <div className="text-xs text-sidebar-foreground/70 px-2 pb-2 truncate">
+          <div className="text-xs text-sidebar-foreground/70 px-2 truncate">
             {user.email}
           </div>
         )}

@@ -40,7 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function fetchRole(uid: string) {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", uid);
+    const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", uid);
+    if (error) console.error("[Auth] fetchRole error:", error);
+    console.log("[Auth] roles for", uid, data);
     if (data?.some((r) => r.role === "admin")) setRole("admin");
     else setRole("employee");
     setLoading(false);
