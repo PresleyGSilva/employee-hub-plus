@@ -63,8 +63,12 @@ export default function Auth() {
       },
     });
     setBusy(false);
-    if (error) toast.error(error.message.includes("registered") ? "E-mail já cadastrado" : error.message);
-    else toast.success("Conta criada! Você já pode entrar.");
+    if (error) {
+      const m = error.message.toLowerCase();
+      if (m.includes("registered") || m.includes("already")) toast.error("E-mail já cadastrado");
+      else if (m.includes("weak") || m.includes("pwned") || m.includes("known to be")) toast.error("Senha muito fraca ou já vazada. Use uma combinação mais forte (letras, números e símbolos).");
+      else toast.error(error.message);
+    } else toast.success("Conta criada! Você já pode entrar.");
   };
 
   return (
@@ -73,8 +77,8 @@ export default function Auth() {
       <div className="md:w-1/2 gradient-hero text-white p-8 md:p-14 flex flex-col justify-between relative overflow-hidden">
         <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full blur-3xl opacity-30" style={{ background: "hsl(var(--accent))" }} />
         <Link to="/" className="flex items-center gap-2 relative">
-          <div className="h-10 w-10 rounded-lg gradient-accent flex items-center justify-center font-bold text-accent-foreground">W</div>
-          <span className="font-bold text-xl" style={{ fontFamily: "Sora" }}>WorkFlow</span>
+          <div className="h-10 w-10 rounded-lg gradient-accent flex items-center justify-center font-bold text-accent-foreground">T</div>
+          <span className="font-bold text-xl" style={{ fontFamily: "Sora" }}>Tottus Cred</span>
         </Link>
         <div className="relative">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
@@ -84,7 +88,7 @@ export default function Auth() {
             Ponto, holerite, metas e comunicação — tudo em um só lugar.
           </p>
         </div>
-        <p className="text-xs text-white/60 relative">© {new Date().getFullYear()} WorkFlow</p>
+        <p className="text-xs text-white/60 relative">© {new Date().getFullYear()} Tottus Cred</p>
       </div>
 
       {/* right form */}

@@ -47,11 +47,11 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-sidebar-border px-4 py-5">
         <div className="flex items-center gap-2">
           <div className="h-9 w-9 rounded-lg gradient-accent flex items-center justify-center font-bold text-accent-foreground shadow-md">
-            W
+            T
           </div>
           {!collapsed && (
             <div className="flex flex-col leading-tight">
-              <span className="font-bold text-sidebar-foreground" style={{ fontFamily: "Sora" }}>WorkFlow</span>
+              <span className="font-bold text-sidebar-foreground" style={{ fontFamily: "Sora" }}>Tottus Cred</span>
               <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
                 {role === "admin" ? "Administrador" : "Funcionário"}
               </span>
