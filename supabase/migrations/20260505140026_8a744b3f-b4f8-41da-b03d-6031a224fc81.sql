@@ -1,0 +1,1 @@
+CREATE POLICY "Authenticated can view admin profiles" ON public.profiles FOR SELECT TO authenticated USING (public.has_role(id, 'admin'::app_role));
