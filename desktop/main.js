@@ -2,6 +2,7 @@
 // Abre sempre a versão mais recente publicada no Lovable.
 // Não precisa reinstalar para receber atualizações.
 const { app, BrowserWindow, shell, Menu } = require("electron");
+const path = require("path");
 
 const APP_URL = "https://ttotuscred.online";
 
