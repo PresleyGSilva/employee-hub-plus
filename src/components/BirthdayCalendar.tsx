@@ -18,6 +18,7 @@ const monthsPt = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set",
 export function BirthdayCalendar() {
   const [list, setList] = useState<Birthday[]>([]);
   const [month, setMonth] = useState<Date>(new Date());
+  const [selectedDay, setSelectedDay] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
     // fire-and-forget: create today's broadcast birthday notifications
@@ -54,6 +55,24 @@ export function BirthdayCalendar() {
     () => Array.from(byDay.keys()).map((d) => new Date(year, monthIndex, d)),
     [byDay, year, monthIndex]
   );
+
+  const monthBirthdays = useMemo(() => {
+    return list
+      .filter((b) => {
+        const d = new Date(b.birth_date + "T00:00:00");
+        return d.getMonth() === monthIndex;
+      })
+      .sort((a, b) => {
+        const da = new Date(a.birth_date + "T00:00:00").getDate();
+        const db = new Date(b.birth_date + "T00:00:00").getDate();
+        return da - db;
+      });
+  }, [list, monthIndex]);
+
+  const selectedBirthdays = useMemo(() => {
+    if (!selectedDay || selectedDay.getMonth() !== monthIndex) return [];
+    return byDay.get(selectedDay.getDate()) ?? [];
+  }, [byDay, monthIndex, selectedDay]);
 
   const todayBdays = list.filter((b) => {
     const d = new Date(b.birth_date + "T00:00:00");
@@ -104,7 +123,12 @@ export function BirthdayCalendar() {
             <Calendar
               mode="single"
               month={month}
-              onMonthChange={setMonth}
+              selected={selectedDay}
+              onSelect={setSelectedDay}
+              onMonthChange={(nextMonth) => {
+                setMonth(nextMonth);
+                setSelectedDay(undefined);
+              }}
               modifiers={{ birthday: birthdayDates }}
               modifiersClassNames={{
                 birthday:
@@ -116,21 +140,20 @@ export function BirthdayCalendar() {
 
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-              Próximos aniversários
+              {selectedBirthdays.length > 0
+                ? `Aniversariantes do dia ${selectedDay?.getDate()}`
+                : `Aniversariantes de ${monthsPt[monthIndex]}`}
             </p>
             <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
-              {upcoming.length === 0 && (
+              {(selectedBirthdays.length > 0 ? selectedBirthdays : monthBirthdays).length === 0 && (
                 <p className="text-sm text-muted-foreground py-4 text-center">
-                  Nenhum aniversário nos próximos 30 dias
+                  Nenhum aniversário cadastrado neste mês
                 </p>
               )}
-              {upcoming.map((b) => {
+              {(selectedBirthdays.length > 0 ? selectedBirthdays : monthBirthdays).map((b) => {
+                const d = new Date(b.birth_date + "T00:00:00");
                 const initials = b.full_name.split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
-                const isToday = b.days === 0;
-                const label =
-                  isToday ? "Hoje 🎂" :
-                  b.days === 1 ? "Amanhã" :
-                  `em ${b.days} dias`;
+                const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth();
                 return (
                   <div
                     key={b.id}
@@ -151,7 +174,7 @@ export function BirthdayCalendar() {
                       <p className="text-sm font-medium truncate">{b.full_name}</p>
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
                         <Cake className="h-3 w-3" />
-                        {b.when.getDate().toString().padStart(2, "0")} de {monthsPt[b.when.getMonth()]}
+                        {d.getDate().toString().padStart(2, "0")} de {monthsPt[d.getMonth()]}
                       </p>
                     </div>
                     <span
@@ -162,7 +185,7 @@ export function BirthdayCalendar() {
                           : "bg-muted text-muted-foreground"
                       )}
                     >
-                      {label}
+                      {isToday ? "Hoje 🎂" : `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}`}
                     </span>
                   </div>
                 );
