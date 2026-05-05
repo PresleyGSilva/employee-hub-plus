@@ -63,8 +63,12 @@ export default function Auth() {
       },
     });
     setBusy(false);
-    if (error) toast.error(error.message.includes("registered") ? "E-mail já cadastrado" : error.message);
-    else toast.success("Conta criada! Você já pode entrar.");
+    if (error) {
+      const m = error.message.toLowerCase();
+      if (m.includes("registered") || m.includes("already")) toast.error("E-mail já cadastrado");
+      else if (m.includes("weak") || m.includes("pwned") || m.includes("known to be")) toast.error("Senha muito fraca ou já vazada. Use uma combinação mais forte (letras, números e símbolos).");
+      else toast.error(error.message);
+    } else toast.success("Conta criada! Você já pode entrar.");
   };
 
   return (
