@@ -18,7 +18,7 @@ export function BirthdaysCard() {
 
   useEffect(() => {
     // fire-and-forget: creates today's broadcast birthday notifications (idempotent)
-    supabase.rpc("notify_today_birthdays" as any).catch(() => {});
+    (supabase.rpc("notify_today_birthdays" as any) as any).then(() => {}, () => {});
     supabase.rpc("get_birthdays_this_month").then(({ data }) => {
       setList((data as Birthday[]) ?? []);
     });
