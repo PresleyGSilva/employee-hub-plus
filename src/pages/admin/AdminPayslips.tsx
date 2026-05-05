@@ -76,7 +76,10 @@ export default function AdminPayslips() {
 
   const openView = async (p: any) => {
     setView(p); setSigUrl(null);
-    if (p.signature_path) {
+    if (p.signed_document_path) {
+      const { data } = await supabase.storage.from("payslip-documents").createSignedUrl(p.signed_document_path, 300);
+      setSigUrl(data?.signedUrl ?? null);
+    } else if (p.signature_path) {
       const { data } = await supabase.storage.from("payslip-signatures").createSignedUrl(p.signature_path, 120);
       setSigUrl(data?.signedUrl ?? null);
     }
@@ -164,8 +167,16 @@ export default function AdminPayslips() {
                 </div>
                 {sigUrl && (
                   <div className="mt-4 pt-4 border-t">
-                    <p className="text-xs text-muted-foreground mb-2">Assinatura do funcionário ({new Date(view.signed_at).toLocaleString("pt-BR")}):</p>
-                    <img src={sigUrl} alt="assinatura" className="border rounded bg-white" />
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {view.signed_document_path ? "Documento assinado" : "Assinatura do funcionário"} ({new Date(view.signed_at).toLocaleString("pt-BR")}):
+                    </p>
+                    {view.signed_document_path ? (
+                      <a href={sigUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline text-sm">
+                        Abrir PDF assinado em nova aba
+                      </a>
+                    ) : (
+                      <img src={sigUrl} alt="assinatura" className="border rounded bg-white" />
+                    )}
                   </div>
                 )}
               </div>
