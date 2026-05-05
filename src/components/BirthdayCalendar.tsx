@@ -3,8 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Cake, PartyPopper, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const fullMonthsPt = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 
 interface Birthday {
   id: string;
@@ -19,6 +22,7 @@ export function BirthdayCalendar() {
   const [list, setList] = useState<Birthday[]>([]);
   const [month, setMonth] = useState<Date>(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | undefined>(undefined);
+  const [selectedPerson, setSelectedPerson] = useState<Birthday | null>(null);
 
   useEffect(() => {
     // fire-and-forget: create today's broadcast birthday notifications
@@ -138,12 +142,14 @@ export function BirthdayCalendar() {
                 const initials = b.full_name.split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
                 const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth();
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={b.id}
+                    onClick={() => setSelectedPerson(b)}
                     className={cn(
-                      "flex items-center gap-3 p-2.5 rounded-lg transition-smooth",
+                      "w-full text-left flex items-center gap-3 p-2.5 rounded-lg transition-smooth cursor-pointer",
                       isToday
-                        ? "bg-gradient-to-r from-accent/20 to-warning/20 border border-accent/40"
+                        ? "bg-gradient-to-r from-accent/20 to-warning/20 border border-accent/40 hover:from-accent/30 hover:to-warning/30"
                         : "hover:bg-muted/50 border border-transparent"
                     )}
                   >
@@ -170,13 +176,54 @@ export function BirthdayCalendar() {
                     >
                       {isToday ? "Hoje 🎂" : `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}`}
                     </span>
-                  </div>
+                  </button>
                 );
               })}
             </div>
           </div>
         </div>
       </CardContent>
+
+      <Dialog open={!!selectedPerson} onOpenChange={(o) => !o && setSelectedPerson(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Cake className="h-5 w-5 text-accent" />
+              Aniversariante
+            </DialogTitle>
+          </DialogHeader>
+          {selectedPerson && (() => {
+            const d = new Date(selectedPerson.birth_date + "T00:00:00");
+            const initials = selectedPerson.full_name.split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
+            const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth();
+            return (
+              <div className="flex flex-col items-center text-center gap-4 py-2">
+                <Avatar className="h-32 w-32 ring-4 ring-accent/40 shadow-elegant">
+                  {selectedPerson.avatar_url && <AvatarImage src={selectedPerson.avatar_url} alt={selectedPerson.full_name} />}
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-3xl">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1">
+                  <h3 className="text-xl font-semibold">{selectedPerson.full_name}</h3>
+                  <p className="text-sm text-muted-foreground flex items-center justify-center gap-1.5">
+                    <CalendarDays className="h-4 w-4" />
+                    {d.getDate().toString().padStart(2, "0")} de {fullMonthsPt[d.getMonth()]}
+                  </p>
+                </div>
+                {isToday && (
+                  <div className="rounded-xl bg-gradient-to-r from-accent/25 to-warning/25 border border-accent/40 px-4 py-2 w-full">
+                    <p className="text-sm font-semibold flex items-center justify-center gap-2">
+                      <PartyPopper className="h-4 w-4 text-accent" />
+                      🎉 É hoje! Mande os parabéns!
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
