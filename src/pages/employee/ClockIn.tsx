@@ -68,9 +68,9 @@ export default function ClockIn() {
 
     let row = today;
     if (!row) {
+      const insertRow: any = { user_id: user.id, entry_date: todayStr, [field]: nowIso };
       const { data, error } = await supabase.from("time_entries")
-        .insert({ user_id: user.id, entry_date: todayStr, [field]: nowIso })
-        .select().single();
+        .insert(insertRow).select().single();
       if (error) { setBusy(false); toast.error(error.message); return; }
       row = data as Entry;
     } else {
