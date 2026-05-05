@@ -19,20 +19,26 @@ export function MessageAlert() {
     if (!user) return;
 
     // simple beep using WebAudio (no external file)
-    const playBeep = () => {
+    const playBeep = (freq = 880, duration = 0.45) => {
       try {
         const Ctx = (window.AudioContext || (window as any).webkitAudioContext);
         const ctx = new Ctx();
         const o = ctx.createOscillator();
         const g = ctx.createGain();
-        o.frequency.value = 880;
+        o.frequency.value = freq;
         o.type = "sine";
         g.gain.setValueAtTime(0.001, ctx.currentTime);
         g.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
         o.connect(g); g.connect(ctx.destination);
-        o.start(); o.stop(ctx.currentTime + 0.45);
+        o.start(); o.stop(ctx.currentTime + duration + 0.05);
       } catch {}
+    };
+
+    const playNotifSound = () => {
+      // two-tone ding for notifications
+      playBeep(660, 0.25);
+      setTimeout(() => playBeep(990, 0.35), 180);
     };
 
     const shake = () => {
