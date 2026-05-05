@@ -79,23 +79,6 @@ export function BirthdayCalendar() {
     return d.getDate() === today.getDate() && d.getMonth() === today.getMonth();
   });
 
-  // upcoming next 30 days (across months)
-  const upcoming = useMemo(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const items = list
-      .map((b) => {
-        const d = new Date(b.birth_date + "T00:00:00");
-        const next = new Date(now.getFullYear(), d.getMonth(), d.getDate());
-        if (next < now) next.setFullYear(next.getFullYear() + 1);
-        const days = Math.round((next.getTime() - now.getTime()) / 86400000);
-        return { ...b, days, when: next };
-      })
-      .filter((x) => x.days <= 30)
-      .sort((a, b) => a.days - b.days);
-    return items;
-  }, [list]);
-
   return (
     <Card className="overflow-hidden border-0 shadow-elegant relative">
       <div className="absolute inset-0 bg-gradient-to-br from-accent/15 via-transparent to-primary/15 pointer-events-none" />
