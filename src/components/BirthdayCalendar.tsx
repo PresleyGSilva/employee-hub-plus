@@ -22,6 +22,7 @@ export function BirthdayCalendar() {
   const [list, setList] = useState<Birthday[]>([]);
   const [month, setMonth] = useState<Date>(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | undefined>(undefined);
+  const [selectedPerson, setSelectedPerson] = useState<Birthday | null>(null);
 
   useEffect(() => {
     // fire-and-forget: create today's broadcast birthday notifications
