@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS overtime_hour_rate numeric NOT NULL DEFAULT 0;
