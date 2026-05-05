@@ -18,7 +18,7 @@ export default function Landing() {
       <header className="border-b bg-background/80 backdrop-blur sticky top-0 z-20">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-lg gradient-primary flex items-center justify-center font-bold text-primary-foreground shadow-md">W</div>
+            <div className="h-9 w-9 rounded-lg gradient-primary flex items-center justify-center font-bold text-primary-foreground shadow-md">T</div>
             <span className="font-bold text-lg" style={{ fontFamily: "Sora" }}>Tottus Cred</span>
           </div>
           <div className="flex items-center gap-2">
