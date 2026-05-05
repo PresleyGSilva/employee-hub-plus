@@ -54,6 +54,7 @@ export default function Documents() {
       full_name: f.get("full_name") as string,
       pix_key: f.get("pix_key") as string,
       phone: f.get("phone") as string,
+      cpf: f.get("cpf") as string,
     }).eq("id", user.id);
     if (error) toast.error(error.message); else { toast.success("Perfil atualizado"); load(); }
   };
@@ -68,6 +69,7 @@ export default function Documents() {
           {profile && (
             <form onSubmit={saveProfile} className="grid gap-4 sm:grid-cols-2">
               <div><Label>Nome completo</Label><Input name="full_name" defaultValue={profile.full_name} required /></div>
+              <div><Label>CPF</Label><Input name="cpf" defaultValue={profile.cpf ?? ""} placeholder="000.000.000-00" /></div>
               <div><Label>Telefone</Label><Input name="phone" defaultValue={profile.phone ?? ""} /></div>
               <div><Label>Chave PIX</Label><Input name="pix_key" defaultValue={profile.pix_key ?? ""} placeholder="CPF, e-mail, telefone ou aleatória" /></div>
               <div><Label>E-mail</Label><Input value={profile.email} disabled /></div>

@@ -121,6 +121,7 @@ export type Database = {
           reference_year: number
           signature_path: string | null
           signed_at: string | null
+          signed_document_path: string | null
           status: Database["public"]["Enums"]["payslip_status"]
           total_late_minutes: number
           total_net: number
@@ -140,6 +141,7 @@ export type Database = {
           reference_year: number
           signature_path?: string | null
           signed_at?: string | null
+          signed_document_path?: string | null
           status?: Database["public"]["Enums"]["payslip_status"]
           total_late_minutes?: number
           total_net?: number
@@ -159,6 +161,7 @@ export type Database = {
           reference_year?: number
           signature_path?: string | null
           signed_at?: string | null
+          signed_document_path?: string | null
           status?: Database["public"]["Enums"]["payslip_status"]
           total_late_minutes?: number
           total_net?: number
@@ -171,6 +174,7 @@ export type Database = {
         Row: {
           active: boolean
           base_salary: number | null
+          cpf: string | null
           created_at: string
           email: string
           full_name: string
@@ -183,6 +187,7 @@ export type Database = {
         Insert: {
           active?: boolean
           base_salary?: number | null
+          cpf?: string | null
           created_at?: string
           email: string
           full_name?: string
@@ -195,6 +200,7 @@ export type Database = {
         Update: {
           active?: boolean
           base_salary?: number | null
+          cpf?: string | null
           created_at?: string
           email?: string
           full_name?: string

@@ -8,24 +8,54 @@ import { Badge } from "@/components/ui/badge";
 import { fmtBRL, fmtMinutes, monthNames } from "@/lib/payroll";
 import { toast } from "sonner";
 import SignatureCanvas from "react-signature-canvas";
-import { FileText, PenTool, CheckCircle2 } from "lucide-react";
+import { FileText, PenTool, CheckCircle2, Download, Upload } from "lucide-react";
+import { generatePayslipPdf } from "@/lib/payslipPdf";
 
 export default function Payslips() {
   const { user } = useAuth();
   const [list, setList] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
   const [open, setOpen] = useState<any>(null);
   const sigRef = useRef<SignatureCanvas>(null);
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
     if (!user) return;
-    const { data } = await supabase.from("payslips").select("*").eq("user_id", user.id)
-      .order("reference_year", { ascending: false }).order("reference_month", { ascending: false });
+    const [{ data }, { data: p }] = await Promise.all([
+      supabase.from("payslips").select("*").eq("user_id", user.id)
+        .order("reference_year", { ascending: false }).order("reference_month", { ascending: false }),
+      supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+    ]);
     setList(data ?? []);
+    setProfile(p);
   };
   useEffect(() => { load(); }, [user]);
 
-  const sign = async () => {
+  const downloadPdf = (p: any) => {
+    if (!profile) return;
+    const doc = generatePayslipPdf({ payslip: p, employee: profile });
+    doc.save(`holerite-${monthNames[p.reference_month - 1]}-${p.reference_year}.pdf`);
+    toast.success("PDF gerado! Assine e faça o upload de volta.");
+  };
+
+  const uploadSigned = async (e: React.ChangeEvent<HTMLInputElement>, p: any) => {
+    if (!user || !e.target.files?.[0]) return;
+    const file = e.target.files[0];
+    if (file.size > 10 * 1024 * 1024) { toast.error("Máximo 10MB"); return; }
+    setBusy(true);
+    const path = `${user.id}/${p.id}-assinado.pdf`;
+    const { error: upErr } = await supabase.storage.from("payslip-documents").upload(path, file, { upsert: true, contentType: file.type });
+    if (upErr) { setBusy(false); toast.error(upErr.message); return; }
+    const { error } = await supabase.from("payslips").update({
+      status: "signed", signed_document_path: path, signed_at: new Date().toISOString(),
+    }).eq("id", p.id);
+    setBusy(false);
+    e.target.value = "";
+    if (error) toast.error(error.message);
+    else { toast.success("Holerite assinado enviado!"); setOpen(null); load(); }
+  };
+
+  const signWithDraw = async () => {
     if (!user || !open || !sigRef.current) return;
     if (sigRef.current.isEmpty()) { toast.error("Desenhe sua assinatura"); return; }
     setBusy(true);
@@ -39,16 +69,20 @@ export default function Payslips() {
     }).eq("id", open.id);
     setBusy(false);
     if (error) toast.error(error.message);
-    else {
-      toast.success("Holerite assinado e enviado ao administrador!");
-      setOpen(null);
-      load();
-    }
+    else { toast.success("Assinatura registrada!"); setOpen(null); load(); }
   };
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Meus Holerites</h1>
+
+      {profile && (!profile.cpf || !profile.pix_key) && (
+        <Card className="border-warning">
+          <CardContent className="p-4 text-sm">
+            ⚠️ Complete seu cadastro em <b>Documentos</b> (CPF e Chave PIX) para gerar o Termo de Quitação corretamente.
+          </CardContent>
+        </Card>
+      )}
 
       {list.length === 0 ? (
         <Card><CardContent className="py-16 text-center text-muted-foreground">
@@ -68,7 +102,7 @@ export default function Payslips() {
                   {p.status === "signed"
                     ? <Badge className="bg-success text-success-foreground"><CheckCircle2 className="h-3 w-3 mr-1" />Assinado</Badge>
                     : <Badge variant="outline" className="border-warning text-warning">Pendente</Badge>}
-                  <Button size="sm" variant="outline" onClick={() => setOpen(p)}>Visualizar</Button>
+                  <Button size="sm" variant="outline" onClick={() => setOpen(p)}>Ver / Assinar</Button>
                 </div>
               </CardContent>
             </Card>
@@ -96,29 +130,52 @@ export default function Payslips() {
                 </div>
 
                 {open.status === "pending" ? (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium flex items-center gap-2"><PenTool className="h-4 w-4" /> Assine abaixo para confirmar</p>
-                    <div className="border-2 border-dashed rounded-lg bg-background">
-                      <SignatureCanvas ref={sigRef} canvasProps={{ className: "w-full h-40 rounded-lg" }} />
+                  <div className="space-y-4">
+                    <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 space-y-3">
+                      <p className="text-sm font-semibold flex items-center gap-2">
+                        <FileText className="h-4 w-4" /> Opção 1 — Termo de Quitação (PDF)
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Baixe o PDF, assine (digital ou impresso) e faça upload de volta para enviar ao administrador.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" onClick={() => downloadPdf(open)}>
+                          <Download className="h-4 w-4 mr-2" /> Baixar Termo
+                        </Button>
+                        <label>
+                          <input type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden"
+                            onChange={(e) => uploadSigned(e, open)} disabled={busy} />
+                          <Button size="sm" asChild disabled={busy} className="gradient-primary text-primary-foreground border-0">
+                            <span className="cursor-pointer"><Upload className="h-4 w-4 mr-2" /> Enviar assinado</span>
+                          </Button>
+                        </label>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => sigRef.current?.clear()}>Limpar</Button>
+
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium flex items-center gap-2"><PenTool className="h-4 w-4" /> Opção 2 — Assinar aqui</p>
+                      <div className="border-2 border-dashed rounded-lg bg-background">
+                        <SignatureCanvas ref={sigRef} canvasProps={{ className: "w-full h-32 rounded-lg" }} />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => sigRef.current?.clear()}>Limpar</Button>
+                        <Button size="sm" onClick={signWithDraw} disabled={busy} className="gradient-primary text-primary-foreground border-0">
+                          Assinar agora
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-lg border bg-success/10 p-4 text-sm">
-                    <CheckCircle2 className="h-5 w-5 inline mr-2 text-success" />
-                    Assinado em {new Date(open.signed_at).toLocaleString("pt-BR")}
+                  <div className="rounded-lg border bg-success/10 p-4 text-sm space-y-2">
+                    <div><CheckCircle2 className="h-5 w-5 inline mr-2 text-success" />
+                    Assinado em {new Date(open.signed_at).toLocaleString("pt-BR")}</div>
+                    <Button size="sm" variant="outline" onClick={() => downloadPdf(open)}>
+                      <Download className="h-4 w-4 mr-2" /> Baixar Termo
+                    </Button>
                   </div>
                 )}
               </div>
-              <DialogFooter>
-                {open.status === "pending" && (
-                  <Button onClick={sign} disabled={busy} className="gradient-primary text-primary-foreground border-0">
-                    Assinar e enviar
-                  </Button>
-                )}
-              </DialogFooter>
+              <DialogFooter />
             </>
           )}
         </DialogContent>
