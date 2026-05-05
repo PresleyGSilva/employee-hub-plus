@@ -1,22 +1,21 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { fmtBRL, fmtMinutes, monthNames } from "@/lib/payroll";
 import { toast } from "sonner";
-import SignatureCanvas from "react-signature-canvas";
-import { FileText, PenTool, CheckCircle2, Download, Upload } from "lucide-react";
+import { FileText, CheckCircle2, Download, Upload, ShieldCheck } from "lucide-react";
 import { generatePayslipPdf } from "@/lib/payslipPdf";
+import { checkGovBrSignature } from "@/lib/govSignature";
 
 export default function Payslips() {
   const { user } = useAuth();
   const [list, setList] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
   const [open, setOpen] = useState<any>(null);
-  const sigRef = useRef<SignatureCanvas>(null);
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
@@ -42,9 +41,27 @@ export default function Payslips() {
     if (!user || !e.target.files?.[0]) return;
     const file = e.target.files[0];
     if (file.size > 10 * 1024 * 1024) { toast.error("Máximo 10MB"); return; }
+
     setBusy(true);
+    const check = await checkGovBrSignature(file);
+    if (!check.isPdf) {
+      setBusy(false); e.target.value = "";
+      toast.error("Envie o arquivo PDF assinado pelo gov.br");
+      return;
+    }
+    if (!check.hasDigitalSignature) {
+      setBusy(false); e.target.value = "";
+      toast.error("Este PDF não contém assinatura digital. Assine em assinador.iti.br (gov.br) e envie novamente.");
+      return;
+    }
+    if (!check.isGovBr) {
+      setBusy(false); e.target.value = "";
+      toast.error("Assinatura digital encontrada, mas não foi reconhecida como gov.br / ICP-Brasil. Use o assinador gov.br.");
+      return;
+    }
+
     const path = `${user.id}/${p.id}-assinado.pdf`;
-    const { error: upErr } = await supabase.storage.from("payslip-documents").upload(path, file, { upsert: true, contentType: file.type });
+    const { error: upErr } = await supabase.storage.from("payslip-documents").upload(path, file, { upsert: true, contentType: "application/pdf" });
     if (upErr) { setBusy(false); toast.error(upErr.message); return; }
     const { error } = await supabase.from("payslips").update({
       status: "signed", signed_document_path: path, signed_at: new Date().toISOString(),
@@ -52,24 +69,7 @@ export default function Payslips() {
     setBusy(false);
     e.target.value = "";
     if (error) toast.error(error.message);
-    else { toast.success("Holerite assinado enviado!"); setOpen(null); load(); }
-  };
-
-  const signWithDraw = async () => {
-    if (!user || !open || !sigRef.current) return;
-    if (sigRef.current.isEmpty()) { toast.error("Desenhe sua assinatura"); return; }
-    setBusy(true);
-    const dataUrl = sigRef.current.toDataURL("image/png");
-    const blob = await (await fetch(dataUrl)).blob();
-    const path = `${user.id}/${open.id}.png`;
-    const { error: upErr } = await supabase.storage.from("payslip-signatures").upload(path, blob, { upsert: true, contentType: "image/png" });
-    if (upErr) { setBusy(false); toast.error(upErr.message); return; }
-    const { error } = await supabase.from("payslips").update({
-      status: "signed", signature_path: path, signed_at: new Date().toISOString(),
-    }).eq("id", open.id);
-    setBusy(false);
-    if (error) toast.error(error.message);
-    else { toast.success("Assinatura registrada!"); setOpen(null); load(); }
+    else { toast.success("Holerite assinado pelo gov.br enviado!"); setOpen(null); load(); }
   };
 
   return (
@@ -133,35 +133,24 @@ export default function Payslips() {
                   <div className="space-y-4">
                     <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 space-y-3">
                       <p className="text-sm font-semibold flex items-center gap-2">
-                        <FileText className="h-4 w-4" /> Opção 1 — Termo de Quitação (PDF)
+                        <ShieldCheck className="h-4 w-4 text-primary" /> Assinatura digital gov.br (obrigatória)
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        Baixe o PDF, assine (digital ou impresso) e faça upload de volta para enviar ao administrador.
-                      </p>
-                      <div className="flex flex-wrap gap-2">
+                      <ol className="text-xs text-muted-foreground list-decimal pl-4 space-y-1">
+                        <li>Baixe o Termo de Quitação em PDF abaixo.</li>
+                        <li>Acesse <a href="https://assinador.iti.br" target="_blank" rel="noreferrer" className="text-primary underline">assinador.iti.br</a> e assine com sua conta gov.br.</li>
+                        <li>Envie aqui o PDF assinado. Apenas PDFs com assinatura gov.br são aceitos.</li>
+                      </ol>
+                      <div className="flex flex-wrap gap-2 pt-1">
                         <Button size="sm" variant="outline" onClick={() => downloadPdf(open)}>
                           <Download className="h-4 w-4 mr-2" /> Baixar Termo
                         </Button>
                         <label>
-                          <input type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden"
+                          <input type="file" accept="application/pdf,.pdf" className="hidden"
                             onChange={(e) => uploadSigned(e, open)} disabled={busy} />
                           <Button size="sm" asChild disabled={busy} className="gradient-primary text-primary-foreground border-0">
-                            <span className="cursor-pointer"><Upload className="h-4 w-4 mr-2" /> Enviar assinado</span>
+                            <span className="cursor-pointer"><Upload className="h-4 w-4 mr-2" /> Enviar PDF assinado (gov.br)</span>
                           </Button>
                         </label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium flex items-center gap-2"><PenTool className="h-4 w-4" /> Opção 2 — Assinar aqui</p>
-                      <div className="border-2 border-dashed rounded-lg bg-background">
-                        <SignatureCanvas ref={sigRef} canvasProps={{ className: "w-full h-32 rounded-lg" }} />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => sigRef.current?.clear()}>Limpar</Button>
-                        <Button size="sm" onClick={signWithDraw} disabled={busy} className="gradient-primary text-primary-foreground border-0">
-                          Assinar agora
-                        </Button>
                       </div>
                     </div>
                   </div>
