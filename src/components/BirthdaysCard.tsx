@@ -17,6 +17,8 @@ export function BirthdaysCard() {
   const [list, setList] = useState<Birthday[]>([]);
 
   useEffect(() => {
+    // fire-and-forget: creates today's broadcast birthday notifications (idempotent)
+    (supabase.rpc("notify_today_birthdays" as any) as any).then(() => {}, () => {});
     supabase.rpc("get_birthdays_this_month").then(({ data }) => {
       setList((data as Birthday[]) ?? []);
     });
