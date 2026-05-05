@@ -221,7 +221,9 @@ export type Database = {
       profiles: {
         Row: {
           active: boolean
+          avatar_url: string | null
           base_salary: number | null
+          birth_date: string | null
           cpf: string | null
           created_at: string
           default_bonus: number | null
@@ -237,7 +239,9 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          avatar_url?: string | null
           base_salary?: number | null
+          birth_date?: string | null
           cpf?: string | null
           created_at?: string
           default_bonus?: number | null
@@ -253,7 +257,9 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          avatar_url?: string | null
           base_salary?: number | null
+          birth_date?: string | null
           cpf?: string | null
           created_at?: string
           default_bonus?: number | null
