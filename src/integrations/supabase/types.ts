@@ -449,6 +449,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      notify_today_birthdays: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "employee"
