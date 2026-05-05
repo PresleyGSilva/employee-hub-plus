@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Clock, FileText, Target } from "lucide-react";
+import { GoalsPerformance } from "@/components/GoalsPerformance";
 
 export default function AdminHome() {
   const [stats, setStats] = useState({ employees: 0, todayClocked: 0, pendingPayslips: 0, goals: 0 });
@@ -48,11 +49,12 @@ export default function AdminHome() {
           </Card>
         ))}
       </div>
+      <GoalsPerformance />
       <Card>
         <CardHeader><CardTitle>Bem-vindo</CardTitle></CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-2">
           <p>Use o menu lateral para gerenciar funcionários, ver registros de ponto, gerar holerites, criar metas e enviar comunicados.</p>
-          <p>💡 Dica: holerites são gerados a partir dos pontos do mês selecionado, com cálculo automático de descontos e horas extras.</p>
+          <p>💡 Dica: atualize o progresso das metas diariamente em <strong>Metas</strong> para que toda a equipe acompanhe o desempenho do mês.</p>
         </CardContent>
       </Card>
     </div>
