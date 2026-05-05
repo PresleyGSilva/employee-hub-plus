@@ -92,6 +92,11 @@ export default function EmployeeFolders() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap justify-end">
+                  {p.signed_document_path && (
+                    <Badge className="bg-primary text-primary-foreground">
+                      <ShieldCheck className="h-3 w-3 mr-1" />gov.br
+                    </Badge>
+                  )}
                   <Badge className="bg-success text-success-foreground">
                     <CheckCircle2 className="h-3 w-3 mr-1" />Assinado
                   </Badge>
