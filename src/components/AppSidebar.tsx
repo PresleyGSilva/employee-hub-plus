@@ -47,9 +47,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border px-4 py-5">
         <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-lg gradient-accent flex items-center justify-center font-bold text-accent-foreground shadow-md">
-            T
-          </div>
+          <img src="/logo-tottus.png" alt="Tottus Cred" className="h-9 w-9 object-contain" />
           {!collapsed && (
             <div className="flex flex-col leading-tight">
               <span className="font-bold text-sidebar-foreground" style={{ fontFamily: "Sora" }}>Tottus Cred</span>

@@ -31,9 +31,9 @@ export default function Payslips() {
   };
   useEffect(() => { load(); }, [user]);
 
-  const downloadPdf = (p: any) => {
+  const downloadPdf = async (p: any) => {
     if (!profile) return;
-    const doc = generatePayslipPdf({ payslip: p, employee: profile });
+    const doc = await generatePayslipPdf({ payslip: p, employee: profile });
     doc.save(`holerite-${monthNames[p.reference_month - 1]}-${p.reference_year}.pdf`);
     toast.success("PDF gerado! Assine e faça o upload de volta.");
   };

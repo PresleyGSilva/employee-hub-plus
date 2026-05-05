@@ -77,7 +77,7 @@ export default function Auth() {
       <div className="md:w-1/2 gradient-hero text-white p-8 md:p-14 flex flex-col justify-between relative overflow-hidden">
         <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full blur-3xl opacity-30" style={{ background: "hsl(var(--accent))" }} />
         <Link to="/" className="flex items-center gap-2 relative">
-          <div className="h-10 w-10 rounded-lg gradient-accent flex items-center justify-center font-bold text-accent-foreground">T</div>
+          <img src="/logo-tottus.png" alt="Tottus Cred" className="h-10 w-10 object-contain bg-white rounded-lg p-1" />
           <span className="font-bold text-xl" style={{ fontFamily: "Sora" }}>Tottus Cred</span>
         </Link>
         <div className="relative">
