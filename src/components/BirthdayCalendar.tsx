@@ -22,7 +22,7 @@ export function BirthdayCalendar() {
 
   useEffect(() => {
     // fire-and-forget: create today's broadcast birthday notifications
-    (supabase.rpc("notify_today_birthdays" as any) as any).then(() => {}, () => {});
+    supabase.rpc("notify_today_birthdays").then(() => {}, () => {});
     // fetch ALL active employees with birth_date (full year view)
     supabase
       .from("profiles")
