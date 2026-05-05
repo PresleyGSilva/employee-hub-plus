@@ -344,6 +344,78 @@ export type Database = {
         }
         Relationships: []
       }
+      vacations: {
+        Row: {
+          acquisition_end: string
+          acquisition_start: string
+          base_salary: number
+          created_at: string
+          created_by: string | null
+          id: string
+          inss_deduction: number
+          irrf_deduction: number
+          notes: string | null
+          one_third_bonus: number
+          sold_days: number
+          sold_days_pay: number
+          status: Database["public"]["Enums"]["vacation_status"]
+          total_gross: number
+          total_net: number
+          updated_at: string
+          user_id: string
+          vacation_days: number
+          vacation_end: string
+          vacation_pay: number
+          vacation_start: string
+        }
+        Insert: {
+          acquisition_end: string
+          acquisition_start: string
+          base_salary?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          inss_deduction?: number
+          irrf_deduction?: number
+          notes?: string | null
+          one_third_bonus?: number
+          sold_days?: number
+          sold_days_pay?: number
+          status?: Database["public"]["Enums"]["vacation_status"]
+          total_gross?: number
+          total_net?: number
+          updated_at?: string
+          user_id: string
+          vacation_days?: number
+          vacation_end: string
+          vacation_pay?: number
+          vacation_start: string
+        }
+        Update: {
+          acquisition_end?: string
+          acquisition_start?: string
+          base_salary?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          inss_deduction?: number
+          irrf_deduction?: number
+          notes?: string | null
+          one_third_bonus?: number
+          sold_days?: number
+          sold_days_pay?: number
+          status?: Database["public"]["Enums"]["vacation_status"]
+          total_gross?: number
+          total_net?: number
+          updated_at?: string
+          user_id?: string
+          vacation_days?: number
+          vacation_end?: string
+          vacation_pay?: number
+          vacation_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -360,6 +432,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "employee"
       payslip_status: "pending" | "signed"
+      vacation_status: "scheduled" | "in_progress" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -489,6 +562,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "employee"],
       payslip_status: ["pending", "signed"],
+      vacation_status: ["scheduled", "in_progress", "completed", "cancelled"],
     },
   },
 } as const

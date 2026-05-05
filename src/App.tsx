@@ -20,6 +20,8 @@ import AdminTimeEntries from "./pages/admin/AdminTimeEntries";
 import AdminPayslips from "./pages/admin/AdminPayslips";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminGoals from "./pages/admin/AdminGoals";
+import AdminVacations from "./pages/admin/AdminVacations";
+import Vacations from "./pages/employee/Vacations";
 import Chat from "./pages/Chat";
 import { MessageAlert } from "./components/MessageAlert";
 
@@ -47,6 +49,7 @@ const App = () => (
               <Route path="documentos" element={<Documents />} />
               <Route path="notificacoes" element={<Notifications />} />
               <Route path="metas" element={<Goals />} />
+              <Route path="ferias" element={<Vacations />} />
               <Route path="chat" element={<Chat />} />
             </Route>
 
@@ -57,6 +60,7 @@ const App = () => (
               <Route path="holerites" element={<AdminPayslips />} />
               <Route path="notificacoes" element={<AdminNotifications />} />
               <Route path="metas" element={<AdminGoals />} />
+              <Route path="ferias" element={<AdminVacations />} />
               <Route path="chat" element={<Chat />} />
             </Route>
 
