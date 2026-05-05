@@ -18,6 +18,7 @@ const employeeItems = [
   { title: "Chat", url: "/app/chat", icon: MessageCircle },
   { title: "Notificações", url: "/app/notificacoes", icon: Bell },
   { title: "Metas", url: "/app/metas", icon: Target },
+  { title: "Férias", url: "/app/ferias", icon: Palmtree },
 ];
 
 const adminItems = [
