@@ -29,7 +29,10 @@ export default function Chat() {
   const loadContacts = async () => {
     if (!user) return;
     if (role === "admin") {
-      const { data } = await supabase.from("profiles").select("id, full_name, email").neq("id", user.id).order("full_name");
+      const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "employee");
+      const ids = (roles ?? []).map((r) => r.user_id).filter((id) => id !== user.id);
+      if (ids.length === 0) { setContacts([]); return; }
+      const { data } = await supabase.from("profiles").select("id, full_name, email").in("id", ids).eq("active", true).order("full_name");
       setContacts(data ?? []);
       if (!active && data?.length) setActive(data[0]);
     } else {
