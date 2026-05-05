@@ -15,7 +15,7 @@
   "build": {
     "appId": "com.tottuscred.desktop",
     "productName": "Tottus Cred",
-    "files": ["main.js", "preload.js"],
+    "files": ["main.js", "preload.js", "icon.ico", "icon.png"],
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }],
       "icon": "icon.ico"
