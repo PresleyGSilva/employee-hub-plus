@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { FolderOpen, Upload, Trash2, FileText } from "lucide-react";
+import { FolderOpen, Upload, Trash2, FileText, Camera, Cake } from "lucide-react";
 
 export default function Documents() {
   const { user } = useAuth();
