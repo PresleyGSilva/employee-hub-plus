@@ -225,6 +225,7 @@ export type Database = {
           cpf: string | null
           created_at: string
           default_bonus: number | null
+          default_commission: number
           email: string
           full_name: string
           id: string
@@ -239,6 +240,7 @@ export type Database = {
           cpf?: string | null
           created_at?: string
           default_bonus?: number | null
+          default_commission?: number
           email: string
           full_name?: string
           id: string
@@ -253,6 +255,7 @@ export type Database = {
           cpf?: string | null
           created_at?: string
           default_bonus?: number | null
+          default_commission?: number
           email?: string
           full_name?: string
           id?: string
