@@ -6,26 +6,40 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fmtBRL } from "@/lib/payroll";
 import { toast } from "sonner";
-import { Pencil, Shield, ShieldOff, FileText } from "lucide-react";
+import { Pencil, Shield, ShieldOff, FileText, KeyRound, Briefcase, Plus, Trash2 } from "lucide-react";
 
 export default function Employees() {
   const [list, setList] = useState<any[]>([]);
+  const [positions, setPositions] = useState<any[]>([]);
   const [editing, setEditing] = useState<any>(null);
+  const [editPosition, setEditPosition] = useState<string>("");
   const [docsOpen, setDocsOpen] = useState<any>(null);
   const [docs, setDocs] = useState<any[]>([]);
+  const [pwdOpen, setPwdOpen] = useState<any>(null);
+  const [newPwd, setNewPwd] = useState("");
+  const [posOpen, setPosOpen] = useState(false);
+  const [newPosName, setNewPosName] = useState("");
 
   const load = async () => {
     const { data: profiles } = await supabase.from("profiles").select("*").order("full_name");
     const { data: roles } = await supabase.from("user_roles").select("*");
+    const { data: pos } = await supabase.from("positions").select("*").order("name");
     const merged = (profiles ?? []).map((p) => ({
       ...p, isAdmin: roles?.some((r) => r.user_id === p.id && r.role === "admin"),
     }));
     setList(merged);
+    setPositions(pos ?? []);
   };
   useEffect(() => { load(); }, []);
+
+  const openEdit = (p: any) => {
+    setEditing(p);
+    setEditPosition(p.position ?? "");
+  };
 
   const save = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,8 +49,9 @@ export default function Employees() {
       full_name: f.get("full_name") as string,
       pix_key: f.get("pix_key") as string,
       phone: f.get("phone") as string,
-      position: f.get("position") as string,
+      position: editPosition || null,
       base_salary: Number(f.get("base_salary")),
+      default_bonus: Number(f.get("default_bonus")),
       active: f.get("active") === "on",
     }).eq("id", editing.id);
     if (error) toast.error(error.message);
@@ -65,9 +80,43 @@ export default function Employees() {
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   };
 
+  const resetPassword = async () => {
+    if (!pwdOpen || newPwd.length < 6) {
+      toast.error("Senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+    const { data, error } = await supabase.functions.invoke("admin-reset-password", {
+      body: { user_id: pwdOpen.id, new_password: newPwd },
+    });
+    if (error || data?.error) toast.error(error?.message || data?.error);
+    else {
+      toast.success(`Senha de ${pwdOpen.full_name} redefinida`);
+      setPwdOpen(null);
+      setNewPwd("");
+    }
+  };
+
+  const addPosition = async () => {
+    if (!newPosName.trim()) return;
+    const { error } = await supabase.from("positions").insert({ name: newPosName.trim() });
+    if (error) toast.error(error.message);
+    else { setNewPosName(""); load(); toast.success("Cargo adicionado"); }
+  };
+
+  const deletePosition = async (id: string) => {
+    const { error } = await supabase.from("positions").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else { load(); toast.success("Cargo removido"); }
+  };
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Funcionários</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Funcionários</h1>
+        <Button variant="outline" onClick={() => setPosOpen(true)}>
+          <Briefcase className="h-4 w-4 mr-2" /> Gerenciar cargos
+        </Button>
+      </div>
       <Card>
         <CardHeader><CardTitle>Lista ({list.length})</CardTitle></CardHeader>
         <CardContent>
@@ -76,7 +125,7 @@ export default function Employees() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead><TableHead>E-mail</TableHead><TableHead>Cargo</TableHead>
-                  <TableHead>Salário base</TableHead><TableHead>PIX</TableHead><TableHead>Status</TableHead>
+                  <TableHead>Salário base</TableHead><TableHead>Bônus</TableHead><TableHead>PIX</TableHead><TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -87,6 +136,7 @@ export default function Employees() {
                     <TableCell>{p.email}</TableCell>
                     <TableCell>{p.position ?? "—"}</TableCell>
                     <TableCell>{fmtBRL(Number(p.base_salary ?? 0))}</TableCell>
+                    <TableCell>{fmtBRL(Number(p.default_bonus ?? 0))}</TableCell>
                     <TableCell className="font-mono text-xs">{p.pix_key ?? "—"}</TableCell>
                     <TableCell>
                       {p.isAdmin && <Badge className="mr-1 bg-accent text-accent-foreground">Admin</Badge>}
@@ -94,14 +144,15 @@ export default function Employees() {
                     </TableCell>
                     <TableCell className="text-right space-x-1">
                       <Button size="icon" variant="ghost" onClick={() => openDocs(p)} title="Documentos"><FileText className="h-4 w-4" /></Button>
+                      <Button size="icon" variant="ghost" onClick={() => setPwdOpen(p)} title="Resetar senha"><KeyRound className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" onClick={() => toggleAdmin(p)} title={p.isAdmin ? "Remover admin" : "Tornar admin"}>
                         {p.isAdmin ? <ShieldOff className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
                       </Button>
-                      <Button size="icon" variant="ghost" onClick={() => setEditing(p)}><Pencil className="h-4 w-4" /></Button>
+                      <Button size="icon" variant="ghost" onClick={() => openEdit(p)}><Pencil className="h-4 w-4" /></Button>
                     </TableCell>
                   </TableRow>
                 ))}
-                {list.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhum funcionário cadastrado. Eles aparecem aqui ao se cadastrarem na tela de login.</TableCell></TableRow>}
+                {list.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhum funcionário cadastrado.</TableCell></TableRow>}
               </TableBody>
             </Table>
           </div>
@@ -116,13 +167,22 @@ export default function Employees() {
               <form onSubmit={save} className="space-y-3">
                 <div><Label>Nome completo</Label><Input name="full_name" defaultValue={editing.full_name} required /></div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Cargo</Label><Input name="position" defaultValue={editing.position ?? ""} /></div>
+                  <div>
+                    <Label>Cargo</Label>
+                    <Select value={editPosition} onValueChange={setEditPosition}>
+                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        {positions.map((p) => <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div><Label>Telefone</Label><Input name="phone" defaultValue={editing.phone ?? ""} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><Label>Chave PIX</Label><Input name="pix_key" defaultValue={editing.pix_key ?? ""} /></div>
                   <div><Label>Salário base (R$)</Label><Input name="base_salary" type="number" step="0.01" defaultValue={editing.base_salary ?? 0} /></div>
                 </div>
+                <div><Label>Bonificação padrão (R$)</Label><Input name="default_bonus" type="number" step="0.01" defaultValue={editing.default_bonus ?? 0} /></div>
                 <label className="flex items-center gap-2 text-sm">
                   <input type="checkbox" name="active" defaultChecked={editing.active} /> Ativo
                 </label>
@@ -147,6 +207,43 @@ export default function Employees() {
               </div>
             ))}
             {docs.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Sem documentos</p>}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!pwdOpen} onOpenChange={() => { setPwdOpen(null); setNewPwd(""); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Redefinir senha de {pwdOpen?.full_name}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Por segurança, senhas são criptografadas e não podem ser visualizadas. Defina uma nova senha provisória e informe ao funcionário.
+            </p>
+            <div>
+              <Label>Nova senha (mín. 6 caracteres)</Label>
+              <Input type="text" value={newPwd} onChange={(e) => setNewPwd(e.target.value)} placeholder="Nova senha" />
+            </div>
+            <Button onClick={resetPassword} className="w-full gradient-primary text-primary-foreground border-0">Redefinir senha</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={posOpen} onOpenChange={setPosOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Cargos</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Input placeholder="Novo cargo" value={newPosName} onChange={(e) => setNewPosName(e.target.value)} />
+              <Button onClick={addPosition}><Plus className="h-4 w-4" /></Button>
+            </div>
+            <div className="space-y-2">
+              {positions.map((p) => (
+                <div key={p.id} className="flex items-center justify-between p-2 rounded border">
+                  <span>{p.name}</span>
+                  <Button size="icon" variant="ghost" onClick={() => deletePosition(p.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              ))}
+              {positions.length === 0 && <p className="text-sm text-muted-foreground text-center py-2">Nenhum cargo</p>}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
