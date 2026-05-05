@@ -20,6 +20,8 @@ import AdminTimeEntries from "./pages/admin/AdminTimeEntries";
 import AdminPayslips from "./pages/admin/AdminPayslips";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminGoals from "./pages/admin/AdminGoals";
+import AdminVacations from "./pages/admin/AdminVacations";
+import Vacations from "./pages/employee/Vacations";
 import Chat from "./pages/Chat";
 import { MessageAlert } from "./components/MessageAlert";
 
