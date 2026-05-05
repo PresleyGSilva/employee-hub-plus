@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS default_commission numeric NOT NULL DEFAULT 0;

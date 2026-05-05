@@ -52,6 +52,7 @@ export default function Employees() {
       position: editPosition || null,
       base_salary: Number(f.get("base_salary")),
       default_bonus: Number(f.get("default_bonus")),
+      default_commission: Number(f.get("default_commission")),
       active: f.get("active") === "on",
     }).eq("id", editing.id);
     if (error) toast.error(error.message);
@@ -125,7 +126,7 @@ export default function Employees() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead><TableHead>E-mail</TableHead><TableHead>Cargo</TableHead>
-                  <TableHead>Salário base</TableHead><TableHead>Bônus</TableHead><TableHead>PIX</TableHead><TableHead>Status</TableHead>
+                  <TableHead>Salário base</TableHead><TableHead>Bônus</TableHead><TableHead>Comissão</TableHead><TableHead>PIX</TableHead><TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -137,6 +138,7 @@ export default function Employees() {
                     <TableCell>{p.position ?? "—"}</TableCell>
                     <TableCell>{fmtBRL(Number(p.base_salary ?? 0))}</TableCell>
                     <TableCell>{fmtBRL(Number(p.default_bonus ?? 0))}</TableCell>
+                    <TableCell>{fmtBRL(Number(p.default_commission ?? 0))}</TableCell>
                     <TableCell className="font-mono text-xs">{p.pix_key ?? "—"}</TableCell>
                     <TableCell>
                       {p.isAdmin && <Badge className="mr-1 bg-accent text-accent-foreground">Admin</Badge>}
@@ -152,7 +154,7 @@ export default function Employees() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {list.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhum funcionário cadastrado.</TableCell></TableRow>}
+                {list.length === 0 && <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Nenhum funcionário cadastrado.</TableCell></TableRow>}
               </TableBody>
             </Table>
           </div>
@@ -182,7 +184,10 @@ export default function Employees() {
                   <div><Label>Chave PIX</Label><Input name="pix_key" defaultValue={editing.pix_key ?? ""} /></div>
                   <div><Label>Salário base (R$)</Label><Input name="base_salary" type="number" step="0.01" defaultValue={editing.base_salary ?? 0} /></div>
                 </div>
-                <div><Label>Bonificação padrão (R$)</Label><Input name="default_bonus" type="number" step="0.01" defaultValue={editing.default_bonus ?? 0} /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label>Bonificação padrão (R$)</Label><Input name="default_bonus" type="number" step="0.01" defaultValue={editing.default_bonus ?? 0} /></div>
+                  <div><Label>Comissão padrão (R$)</Label><Input name="default_commission" type="number" step="0.01" defaultValue={editing.default_commission ?? 0} /></div>
+                </div>
                 <label className="flex items-center gap-2 text-sm">
                   <input type="checkbox" name="active" defaultChecked={editing.active} /> Ativo
                 </label>
