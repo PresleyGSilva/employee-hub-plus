@@ -278,7 +278,9 @@ export default function Employees() {
           <div className="2xl:hidden space-y-3">
             {list.map((p) => {
               const v = vacations[p.id];
-              const t = teams.find((x) => x.id === p.team_id);
+              const supTeam = teams.find((x) => x.supervisor_id === p.id);
+              const memberTeam = teams.find((x) => x.id === p.team_id);
+              const t = supTeam || memberTeam;
               const fmtD = (d?: string | null) => d ? new Date(d + "T00:00:00").toLocaleDateString("pt-BR") : "—";
               return (
                 <div key={p.id} className="rounded-lg border p-3 space-y-2 bg-card">
