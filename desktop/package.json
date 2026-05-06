@@ -9,15 +9,15 @@
     "build": "electron-builder --win --publish never"
   },
   "devDependencies": {
-    "electron": "^33.0.0",
-    "electron-builder": "^25.1.8"
+    "electron": "22.3.27",
+    "electron-builder": "^24.13.3"
   },
   "build": {
     "appId": "com.tottuscred.desktop",
     "productName": "Tottus Cred",
     "files": ["main.js", "preload.js", "icon.ico", "icon.png"],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "target": [{ "target": "nsis", "arch": ["x64", "ia32"] }],
       "icon": "icon.ico"
     },
     "nsis": {
