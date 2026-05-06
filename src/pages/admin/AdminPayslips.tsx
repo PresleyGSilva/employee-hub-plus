@@ -13,6 +13,7 @@ import { Sparkles, CheckCircle2, Download, Upload, Trash2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { generatePayslipPdf } from "@/lib/payslipPdf";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function AdminPayslips() {
   const now = new Date();
