@@ -115,6 +115,15 @@ export default function Documents() {
       cpf: f.get("cpf") as string,
       cnpj: f.get("cnpj") as string,
       company_name: (f.get("company_name") as string) || null,
+      address: (f.get("address") as string) || null,
+      address_number: (f.get("address_number") as string) || null,
+      neighborhood: (f.get("neighborhood") as string) || null,
+      city: (f.get("city") as string) || null,
+      state: (f.get("state") as string) || null,
+      zip_code: (f.get("zip_code") as string) || null,
+      municipal_registration: (f.get("municipal_registration") as string) || null,
+      service_code: (f.get("service_code") as string) || null,
+      service_description: (f.get("service_description") as string) || null,
       birth_date: birth,
     }).eq("id", user.id);
     if (error) toast.error(error.message); else { toast.success("Perfil atualizado"); load(); }
