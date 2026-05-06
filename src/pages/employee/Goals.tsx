@@ -80,7 +80,7 @@ export default function Goals() {
 
   // Supervisor: members of my team
   const myTeam = teams.find((t) => t.id === activeTeamId);
-  const isSupervisor = role === "supervisor" && supervisedTeam?.supervisor_id === user?.id;
+  const isSupervisor = role === "supervisor";
   const teamMembers = profiles.filter((p) => p.team_id === activeTeamId);
 
   const distSum = Object.values(distAlloc).reduce((s, v) => s + (Number(v) || 0), 0);
@@ -99,10 +99,10 @@ export default function Goals() {
   };
 
   const submitDistribution = async () => {
+    if (!activeTeamId) return toast.error("Vincule uma equipe para esta supervisora antes de distribuir metas");
     if (!distTitle.trim()) return toast.error("Informe o título");
     if (!distTotal || distTotal <= 0) return toast.error("Informe a meta total");
     if (Math.abs(distRemaining) > 0.01) return toast.error(`A soma da distribuição (${distSum.toLocaleString("pt-BR")}) deve ser igual à meta total (${Number(distTotal).toLocaleString("pt-BR")})`);
-    if (!activeTeamId) return;
     setBusy(true);
 
     // 1) Team goal
