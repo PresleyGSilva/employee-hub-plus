@@ -63,6 +63,7 @@ export default function Employees() {
       overtime_hour_rate: Number(f.get("overtime_hour_rate")),
       hire_date: (f.get("hire_date") as string) || null,
       active: f.get("active") === "on",
+      is_mei: f.get("is_mei") === "on",
     }).eq("id", editing.id);
     if (error) toast.error(error.message);
     else { toast.success("Atualizado"); setEditing(null); load(); }
