@@ -15,9 +15,12 @@ import { Pencil, Shield, ShieldOff, FileText, KeyRound, Briefcase, Plus, Trash2 
 export default function Employees() {
   const [list, setList] = useState<any[]>([]);
   const [positions, setPositions] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
   const [vacations, setVacations] = useState<Record<string, any>>({});
   const [editing, setEditing] = useState<any>(null);
   const [editPosition, setEditPosition] = useState<string>("");
+  const [editTeam, setEditTeam] = useState<string>("");
+  const [editRole, setEditRole] = useState<"employee" | "supervisor" | "admin">("employee");
   const [docsOpen, setDocsOpen] = useState<any>(null);
   const [docs, setDocs] = useState<any[]>([]);
   const [pwdOpen, setPwdOpen] = useState<any>(null);
