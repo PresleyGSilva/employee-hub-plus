@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { fmtBRL, fmtMinutes, monthNames } from "@/lib/payroll";
-import { FileText, CheckCircle2, Info, XCircle, Eraser } from "lucide-react";
+import { FileText, CheckCircle2, Info, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Payslips() {
@@ -15,10 +16,8 @@ export default function Payslips() {
   const [list, setList] = useState<any[]>([]);
   const [open, setOpen] = useState<any>(null);
   const [reason, setReason] = useState("");
+  const [signatureName, setSignatureName] = useState("");
   const [saving, setSaving] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const drawing = useRef(false);
-  const hasDrawn = useRef(false);
 
   const load = async () => {
     if (!user) return;
@@ -28,66 +27,43 @@ export default function Payslips() {
   };
   useEffect(() => { load(); }, [user]);
 
-  const openModal = (p: any) => {
+  const openModal = async (p: any) => {
     setOpen(p);
     setReason(p.rejection_reason ?? "");
-    hasDrawn.current = false;
-    setTimeout(() => clearCanvas(), 50);
+    let name = "";
+    if (user) {
+      const { data: prof } = await supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle();
+      name = prof?.full_name ?? "";
+    }
+    setSignatureName(name);
   };
 
-  const setupCanvas = (canvas: HTMLCanvasElement) => {
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "#000";
+  const generateSignatureBlob = (name: string): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 600;
+      canvas.height = 180;
+      const ctx = canvas.getContext("2d")!;
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#000";
+      ctx.font = "italic 64px 'Brush Script MT', cursive";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(name, canvas.width / 2, canvas.height / 2);
+      canvas.toBlob((b) => resolve(b!), "image/png");
+    });
   };
-
-  const clearCanvas = () => {
-    const c = canvasRef.current;
-    if (!c) return;
-    const ctx = c.getContext("2d");
-    if (!ctx) return;
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(0, 0, c.width, c.height);
-    setupCanvas(c);
-    hasDrawn.current = false;
-  };
-
-  const pos = (e: React.MouseEvent | React.TouchEvent) => {
-    const c = canvasRef.current!;
-    const r = c.getBoundingClientRect();
-    const sx = c.width / r.width;
-    const sy = c.height / r.height;
-    const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
-    return { x: (cx - r.left) * sx, y: (cy - r.top) * sy };
-  };
-
-  const start = (e: React.MouseEvent | React.TouchEvent) => {
-    drawing.current = true; hasDrawn.current = true;
-    const ctx = canvasRef.current!.getContext("2d")!;
-    const p = pos(e);
-    ctx.beginPath(); ctx.moveTo(p.x, p.y);
-  };
-  const move = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!drawing.current) return;
-    const ctx = canvasRef.current!.getContext("2d")!;
-    const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke();
-  };
-  const end = () => { drawing.current = false; };
 
   const submit = async (agree: boolean) => {
     if (!open || !user) return;
     if (!agree && !reason.trim()) { toast.error("Informe o motivo"); return; }
-    if (agree && !hasDrawn.current) { toast.error("Assine no campo"); return; }
+    if (agree && !signatureName.trim()) { toast.error("Digite seu nome para assinar"); return; }
     setSaving(true);
     try {
       let signature_path: string | undefined;
-      if (agree && canvasRef.current) {
-        const blob: Blob = await new Promise((res) =>
-          canvasRef.current!.toBlob((b) => res(b!), "image/png")
-        );
+      if (agree) {
+        const blob = await generateSignatureBlob(signatureName.trim());
         const path = `${user.id}/${open.id}-${Date.now()}.png`;
         const { error: upErr } = await supabase.storage.from("payslip-signatures")
           .upload(path, blob, { upsert: true, contentType: "image/png" });
@@ -205,20 +181,20 @@ export default function Payslips() {
                         placeholder="Descreva o motivo do desacordo..." maxLength={500} className="mt-1" />
                     </div>
                     <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="text-sm font-medium">Assinatura (desenhe com o mouse)</label>
-                        <Button type="button" variant="ghost" size="sm" onClick={clearCanvas}>
-                          <Eraser className="h-3 w-3 mr-1" /> Limpar
-                        </Button>
-                      </div>
-                      <canvas
-                        ref={canvasRef}
-                        width={600}
-                        height={180}
-                        className="w-full h-44 border-2 border-dashed border-border rounded bg-white touch-none cursor-crosshair"
-                        onMouseDown={start} onMouseMove={move} onMouseUp={end} onMouseLeave={end}
-                        onTouchStart={start} onTouchMove={move} onTouchEnd={end}
+                      <label className="text-sm font-medium">Assinatura (digite seu nome completo)</label>
+                      <Input
+                        value={signatureName}
+                        onChange={(e) => setSignatureName(e.target.value)}
+                        placeholder="Digite seu nome completo"
+                        className="mt-1"
                       />
+                      {signatureName.trim() && (
+                        <div className="mt-2 border-2 border-dashed border-border rounded bg-white p-4 text-center">
+                          <span style={{ fontFamily: "'Brush Script MT', cursive", fontStyle: "italic", fontSize: "32px", color: "#000" }}>
+                            {signatureName}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
