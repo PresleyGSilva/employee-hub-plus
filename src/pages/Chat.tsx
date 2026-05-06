@@ -93,13 +93,14 @@ export default function Chat() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <MessageCircle className="h-7 w-7 text-primary" />
-        <h1 className="text-3xl font-bold">Chat</h1>
+        <MessageCircle className="h-6 w-6 md:h-7 md:w-7 text-primary" />
+        <h1 className="text-2xl md:text-3xl font-bold">Chat</h1>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 h-[calc(100vh-200px)]">
-        <Card className="overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 h-[calc(100vh-180px)] md:h-[calc(100vh-200px)]">
+        {/* Contacts list — hidden on mobile when a chat is open */}
+        <Card className={`overflow-hidden ${active ? "hidden md:flex md:flex-col" : "flex flex-col"}`}>
           <CardHeader className="py-3"><CardTitle className="text-sm">{role === "admin" ? "Funcionários" : "Gerência"}</CardTitle></CardHeader>
-          <CardContent className="p-0 overflow-y-auto">
+          <CardContent className="p-0 overflow-y-auto flex-1">
             {contacts.map((c) => (
               <button key={c.id}
                 onClick={() => setActive(c)}
@@ -112,18 +113,22 @@ export default function Chat() {
           </CardContent>
         </Card>
 
-        <Card className="flex flex-col overflow-hidden">
+        {/* Conversation — hidden on mobile when no chat is open */}
+        <Card className={`flex-col overflow-hidden ${active ? "flex" : "hidden md:flex"}`}>
           {active ? (
             <>
-              <CardHeader className="py-3 border-b">
-                <CardTitle className="text-base">{active.full_name || active.email}</CardTitle>
+              <CardHeader className="py-3 border-b flex-row items-center gap-2 space-y-0">
+                <Button variant="ghost" size="icon" className="md:hidden h-8 w-8" onClick={() => setActive(null)} aria-label="Voltar">
+                  ←
+                </Button>
+                <CardTitle className="text-base truncate">{active.full_name || active.email}</CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto p-4 space-y-2 bg-muted/20">
+              <CardContent className="flex-1 overflow-y-auto p-3 md:p-4 space-y-2 bg-muted/20">
                 {messages.map((m) => {
                   const mine = m.sender_id === user?.id;
                   return (
                     <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
+                      <div className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
                         mine ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-card rounded-bl-sm border"
                       }`}>
                         <p className="whitespace-pre-wrap break-words">{m.content}</p>
@@ -144,7 +149,7 @@ export default function Chat() {
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
                   placeholder="Digite sua mensagem..."
                 />
-                <Button onClick={send} className="gradient-primary text-primary-foreground border-0">
+                <Button onClick={send} className="gradient-primary text-primary-foreground border-0 shrink-0">
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
