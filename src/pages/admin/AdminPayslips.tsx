@@ -142,6 +142,8 @@ export default function AdminPayslips() {
                     <TableCell className="font-bold">{fmtBRL(Number(p.total_net))}</TableCell>
                     <TableCell>{p.status === "signed"
                       ? <Badge className="bg-success text-success-foreground"><CheckCircle2 className="h-3 w-3 mr-1" />Assinado</Badge>
+                      : p.status === "rejected"
+                      ? <Badge variant="destructive" title={p.rejection_reason ?? ""}>Não concordou</Badge>
                       : <Badge variant="outline" className="border-warning text-warning">Pendente</Badge>}</TableCell>
                     <TableCell>
                       <div className="flex gap-1 flex-wrap">
@@ -227,10 +229,17 @@ export default function AdminPayslips() {
                 <div className="pt-2 border-t flex justify-between font-bold text-lg">
                   <span>Líquido</span><span className="text-primary">{fmtBRL(Number(view.total_net))}</span>
                 </div>
+                {view.status === "rejected" && (
+                  <div className="mt-4 pt-4 border-t rounded-lg bg-destructive/10 p-3 text-sm">
+                    <p className="font-semibold text-destructive">Funcionário NÃO concordou</p>
+                    {view.responded_at && <p className="text-xs text-muted-foreground">em {new Date(view.responded_at).toLocaleString("pt-BR")}</p>}
+                    {view.rejection_reason && <p className="mt-2"><strong>Motivo:</strong> {view.rejection_reason}</p>}
+                  </div>
+                )}
                 {sigUrl && (
                   <div className="mt-4 pt-4 border-t">
                     <p className="text-xs text-muted-foreground mb-2">
-                      {view.signed_document_path ? "Documento assinado" : "Assinatura do funcionário"} ({new Date(view.signed_at).toLocaleString("pt-BR")}):
+                      {view.signed_document_path ? "Documento assinado" : "Assinatura do funcionário"} ({view.signed_at ? new Date(view.signed_at).toLocaleString("pt-BR") : "—"}):
                     </p>
                     {view.signed_document_path ? (
                       <a href={sigUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline text-sm">
