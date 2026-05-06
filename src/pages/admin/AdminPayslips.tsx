@@ -142,7 +142,38 @@ export default function AdminPayslips() {
                     <TableCell>{p.status === "signed"
                       ? <Badge className="bg-success text-success-foreground"><CheckCircle2 className="h-3 w-3 mr-1" />Assinado</Badge>
                       : <Badge variant="outline" className="border-warning text-warning">Pendente</Badge>}</TableCell>
-                    <TableCell><Button size="sm" variant="outline" onClick={() => openView(p)}>Ver</Button></TableCell>
+                    <TableCell>
+                      <div className="flex gap-1 flex-wrap">
+                        <Button size="sm" variant="outline" onClick={() => openView(p)}>Ver</Button>
+                        <Button size="sm" variant="outline" onClick={async () => {
+                          const prof = profiles[p.user_id];
+                          if (!prof) return;
+                          const doc = await generatePayslipPdf({ payslip: p, employee: prof });
+                          doc.save(`holerite-${(prof.full_name||"funcionario").replace(/\s+/g,"_")}-${monthNames[p.reference_month-1]}-${p.reference_year}.pdf`);
+                        }}>
+                          <Download className="h-3 w-3 mr-1" /> PDF
+                        </Button>
+                        <label>
+                          <input type="file" accept="application/pdf,.pdf" className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              const path = `${p.user_id}/${p.id}-assinado.pdf`;
+                              const { error: upErr } = await supabase.storage.from("payslip-documents").upload(path, file, { upsert: true, contentType: "application/pdf" });
+                              if (upErr) { toast.error(upErr.message); return; }
+                              const { error } = await supabase.from("payslips").update({
+                                status: "signed", signed_document_path: path, signed_at: new Date().toISOString(),
+                              }).eq("id", p.id);
+                              e.target.value = "";
+                              if (error) toast.error(error.message);
+                              else { toast.success("Holerite assinado salvo na pasta do funcionário"); load(); }
+                            }} />
+                          <Button size="sm" asChild className="gradient-primary text-primary-foreground border-0">
+                            <span className="cursor-pointer"><Upload className="h-3 w-3 mr-1" /> Assinado</span>
+                          </Button>
+                        </label>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
                 {list.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhum holerite gerado para este período</TableCell></TableRow>}
