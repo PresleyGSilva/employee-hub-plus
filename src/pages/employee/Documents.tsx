@@ -33,20 +33,20 @@ export default function Documents() {
   };
   useEffect(() => { load(); }, [user]);
 
-  const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onUpload = async (category: string, categoryLabel: string, e: React.ChangeEvent<HTMLInputElement>) => {
     if (!user || !e.target.files?.[0]) return;
     const file = e.target.files[0];
     if (file.size > 10 * 1024 * 1024) { toast.error("Máximo 10MB"); return; }
     setBusy(true);
-    const path = `${user.id}/${Date.now()}-${file.name}`;
+    const path = `${user.id}/${category}/${Date.now()}-${file.name}`;
     const { error: upErr } = await supabase.storage.from("employee-documents").upload(path, file);
     if (upErr) { setBusy(false); toast.error(upErr.message); return; }
     const { error } = await supabase.from("documents").insert({
-      user_id: user.id, name: file.name, doc_type: file.type, file_path: path,
+      user_id: user.id, name: `${categoryLabel} — ${file.name}`, doc_type: category, file_path: path,
     });
     setBusy(false);
     if (error) toast.error(error.message);
-    else { toast.success("Documento enviado"); load(); e.target.value = ""; }
+    else { toast.success(`${categoryLabel} enviado`); load(); e.target.value = ""; }
   };
 
   const remove = async (doc: any) => {
