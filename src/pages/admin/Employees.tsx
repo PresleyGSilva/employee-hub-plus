@@ -61,6 +61,7 @@ export default function Employees() {
       default_bonus: Number(f.get("default_bonus")),
       default_commission: Number(f.get("default_commission")),
       overtime_hour_rate: Number(f.get("overtime_hour_rate")),
+      hire_date: (f.get("hire_date") as string) || null,
       active: f.get("active") === "on",
     }).eq("id", editing.id);
     if (error) toast.error(error.message);
