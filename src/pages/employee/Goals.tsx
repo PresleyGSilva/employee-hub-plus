@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Target, Trophy, Users, Medal, Crown, Wand2, Plus } from "lucide-react";
+import { Target, Trophy, Users, Medal, Crown, Wand2, Plus, TrendingUp, Save } from "lucide-react";
 import { monthNames } from "@/lib/payroll";
 import { toast } from "sonner";
 
@@ -191,6 +191,7 @@ export default function Goals() {
           <TabsTrigger value="me"><Target className="h-4 w-4 mr-1" /> Minhas metas</TabsTrigger>
           <TabsTrigger value="team"><Users className="h-4 w-4 mr-1" /> Minha equipe</TabsTrigger>
           {isSupervisor && <TabsTrigger value="distribute"><Wand2 className="h-4 w-4 mr-1" /> Distribuir meta</TabsTrigger>}
+          {isSupervisor && <TabsTrigger value="update"><TrendingUp className="h-4 w-4 mr-1" /> Atualizar vendas</TabsTrigger>}
           {!isEmployee && <TabsTrigger value="ranking"><Trophy className="h-4 w-4 mr-1" /> Ranking</TabsTrigger>}
         </TabsList>
 
@@ -341,6 +342,17 @@ export default function Goals() {
           </TabsContent>
         )}
 
+        {isSupervisor && (
+          <TabsContent value="update" className="space-y-4 mt-4">
+            <UpdateSalesPanel
+              teamGoals={myTeamGoals}
+              members={teamMembers}
+              individualGoals={goals.filter((g) => g.scope === "individual" && teamMembers.some((m) => m.id === g.user_id))}
+              onSaved={load}
+            />
+          </TabsContent>
+        )}
+
         <TabsContent value="ranking" className="space-y-4 mt-4">
           <Card>
             <CardHeader><CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" /> Equipes</CardTitle></CardHeader>
@@ -404,5 +416,95 @@ export default function Goals() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function UpdateSalesPanel({ teamGoals, members, individualGoals, onSaved }: { teamGoals: any[]; members: any[]; individualGoals: any[]; onSaved: () => void }) {
+  const [values, setValues] = useState<Record<string, number>>({});
+  const [teamValues, setTeamValues] = useState<Record<string, number>>({});
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const init: Record<string, number> = {};
+    individualGoals.forEach((g) => { init[g.id] = Number(g.current_value || 0); });
+    setValues(init);
+    const tinit: Record<string, number> = {};
+    teamGoals.forEach((g) => { tinit[g.id] = Number(g.current_value || 0); });
+    setTeamValues(tinit);
+  }, [individualGoals, teamGoals]);
+
+  const save = async () => {
+    setBusy(true);
+    const updates: PromiseLike<any>[] = [];
+    for (const g of individualGoals) {
+      const v = Number(values[g.id] ?? 0);
+      if (v !== Number(g.current_value || 0)) {
+        updates.push(supabase.from("goals").update({ current_value: v }).eq("id", g.id).then((r) => r));
+      }
+    }
+    for (const g of teamGoals) {
+      const v = Number(teamValues[g.id] ?? 0);
+      if (v !== Number(g.current_value || 0)) {
+        updates.push(supabase.from("goals").update({ current_value: v }).eq("id", g.id).then((r) => r));
+      }
+    }
+    const res = await Promise.all(updates);
+    const err = res.find((r: any) => r?.error)?.error;
+    setBusy(false);
+    if (err) return toast.error(err.message);
+    toast.success("Vendas atualizadas!");
+    onSaved();
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5" /> Atualizar vendas (semanal)</CardTitle>
+        <p className="text-sm text-muted-foreground">Toda sexta-feira, registre o quanto a equipe e cada consultora venderam no mês.</p>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        {teamGoals.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold">Meta da equipe</p>
+            {teamGoals.map((g) => {
+              const v = Number(teamValues[g.id] ?? 0);
+              const pct = g.target_value > 0 ? (v / Number(g.target_value)) * 100 : 0;
+              return (
+                <div key={g.id} className="grid grid-cols-12 gap-2 items-center p-2 rounded-lg border">
+                  <div className="col-span-12 sm:col-span-5 text-sm font-medium">🎯 {g.title}<div className="text-xs text-muted-foreground">Meta: {Number(g.target_value).toLocaleString("pt-BR")}</div></div>
+                  <div className="col-span-7 sm:col-span-4">
+                    <Input type="number" step="0.01" value={teamValues[g.id] ?? ""} onChange={(e) => setTeamValues((s) => ({ ...s, [g.id]: Number(e.target.value) }))} />
+                  </div>
+                  <div className="col-span-5 sm:col-span-3 text-right text-sm font-bold text-primary">{Math.min(100, pct).toFixed(0)}%</div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="space-y-2 pt-3 border-t">
+          <p className="text-sm font-semibold">Vendas por consultora</p>
+          {individualGoals.length === 0 && <p className="text-sm text-muted-foreground py-3 text-center">Nenhuma meta individual ainda. Distribua a meta primeiro.</p>}
+          {individualGoals.map((g) => {
+            const member = members.find((m) => m.id === g.user_id);
+            const v = Number(values[g.id] ?? 0);
+            const pct = g.target_value > 0 ? (v / Number(g.target_value)) * 100 : 0;
+            return (
+              <div key={g.id} className="grid grid-cols-12 gap-2 items-center p-2 rounded-lg border">
+                <div className="col-span-12 sm:col-span-5 text-sm font-medium">{member?.full_name ?? "—"}<div className="text-xs text-muted-foreground">Meta: {Number(g.target_value).toLocaleString("pt-BR")}</div></div>
+                <div className="col-span-7 sm:col-span-4">
+                  <Input type="number" step="0.01" value={values[g.id] ?? ""} onChange={(e) => setValues((s) => ({ ...s, [g.id]: Number(e.target.value) }))} />
+                </div>
+                <div className="col-span-5 sm:col-span-3 text-right text-sm font-bold text-primary">{Math.min(100, pct).toFixed(0)}%</div>
+              </div>
+            );
+          })}
+        </div>
+
+        <Button onClick={save} disabled={busy} className="w-full gradient-primary text-primary-foreground border-0">
+          <Save className="h-4 w-4 mr-1" /> Salvar vendas
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
