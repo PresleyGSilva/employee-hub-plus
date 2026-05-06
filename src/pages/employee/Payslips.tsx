@@ -181,20 +181,20 @@ export default function Payslips() {
                         placeholder="Descreva o motivo do desacordo..." maxLength={500} className="mt-1" />
                     </div>
                     <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="text-sm font-medium">Assinatura (desenhe com o mouse)</label>
-                        <Button type="button" variant="ghost" size="sm" onClick={clearCanvas}>
-                          <Eraser className="h-3 w-3 mr-1" /> Limpar
-                        </Button>
-                      </div>
-                      <canvas
-                        ref={canvasRef}
-                        width={600}
-                        height={180}
-                        className="w-full h-44 border-2 border-dashed border-border rounded bg-white touch-none cursor-crosshair"
-                        onMouseDown={start} onMouseMove={move} onMouseUp={end} onMouseLeave={end}
-                        onTouchStart={start} onTouchMove={move} onTouchEnd={end}
+                      <label className="text-sm font-medium">Assinatura (digite seu nome completo)</label>
+                      <Input
+                        value={signatureName}
+                        onChange={(e) => setSignatureName(e.target.value)}
+                        placeholder="Digite seu nome completo"
+                        className="mt-1"
                       />
+                      {signatureName.trim() && (
+                        <div className="mt-2 border-2 border-dashed border-border rounded bg-white p-4 text-center">
+                          <span style={{ fontFamily: "'Brush Script MT', cursive", fontStyle: "italic", fontSize: "32px", color: "#000" }}>
+                            {signatureName}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
