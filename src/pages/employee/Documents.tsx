@@ -14,6 +14,7 @@ const DOC_CATEGORIES = [
   { key: "cpf", label: "CPF" },
   { key: "comprovante_residencia", label: "Comprovante de Residência" },
   { key: "titulo_eleitor", label: "Título de Eleitor" },
+  { key: "auxilio_brasil", label: "Comprovante de Auxílio Brasil" },
   { key: "cnpj", label: "CNPJ (MEI)" },
 ] as const;
 
