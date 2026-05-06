@@ -131,3 +131,16 @@
 .screen-shake {
   animation: screen-shake 0.65s cubic-bezier(.36,.07,.19,.97) both;
 }
+
+/* Responsive: shrink large headings on mobile to avoid horizontal overflow */
+@media (max-width: 640px) {
+  h1.text-3xl { font-size: 1.5rem; line-height: 2rem; }
+  h1.text-4xl { font-size: 1.75rem; line-height: 2.25rem; }
+  .text-3xl { font-size: 1.5rem; line-height: 2rem; }
+}
+
+/* Make tables inside cards horizontally scrollable on touch with momentum */
+.overflow-x-auto { -webkit-overflow-scrolling: touch; }
+
+/* Avoid tap-highlight blue flash on mobile buttons */
+button, a { -webkit-tap-highlight-color: transparent; }
