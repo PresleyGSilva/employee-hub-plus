@@ -3,7 +3,6 @@ import { COMPANY } from "./company";
 import { fmtBRL, monthNames } from "./payroll";
 
 const NFSE_PORTAL = "https://www.nfse.gov.br/EmissorNacional";
-const SERVICE_CODE = "17.22.01 - Cobrança em geral.";
 
 export function generateNfseDataPdf(opts: {
   employee: any;
@@ -12,6 +11,10 @@ export function generateNfseDataPdf(opts: {
   amount: number;
 }) {
   const { employee, month, year, amount } = opts;
+  const code = employee.service_code || "17.22.01";
+  const codeDesc = employee.service_description || "Cobrança em geral.";
+  const fullCode = `${code} - ${codeDesc}`;
+
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const W = 210;
   let y = 15;
@@ -42,9 +45,20 @@ export function generateNfseDataPdf(opts: {
     y += 5 * Math.max(1, lines.length);
   };
 
+  const fullAddress = [
+    employee.address,
+    employee.address_number,
+    employee.neighborhood,
+  ].filter(Boolean).join(", ");
+  const city = [employee.city, employee.state].filter(Boolean).join(" - ");
+
   section("PRESTADOR DO SERVIÇO (você)");
   row("CNPJ:", employee.cnpj || "—");
   row("Nome empresarial:", employee.company_name || employee.full_name || "—");
+  if (employee.municipal_registration) row("Inscrição Municipal:", employee.municipal_registration);
+  if (fullAddress) row("Endereço:", fullAddress);
+  if (city) row("Município:", city);
+  if (employee.zip_code) row("CEP:", employee.zip_code);
   row("Chave PIX:", employee.pix_key || "—");
   y += 3;
 
@@ -55,7 +69,7 @@ export function generateNfseDataPdf(opts: {
   y += 3;
 
   section("SERVIÇO");
-  row("Código:", SERVICE_CODE);
+  row("Código:", fullCode);
   row("Local da prestação:", `${COMPANY.city} - ${COMPANY.state}`);
   y += 2;
   doc.setFont("helvetica", "bold");
@@ -90,7 +104,7 @@ export function generateNfseDataPdf(opts: {
     "2. Faça login com sua conta gov.br (CPF e senha do MEI).",
     "3. Clique em 'Emitir NFS-e' e preencha com os dados acima.",
     "4. Em 'Tomador', informe o CNPJ da TOTTUS para preenchimento automático.",
-    "5. Em 'Serviço', use o código 17.22.01 e cole a descrição acima.",
+    `5. Em 'Serviço', use o código ${code} e cole a descrição acima.`,
     `6. Em 'Valor do serviço', informe ${fmtBRL(amount)}.`,
     "7. Confira e clique em 'Emitir'. Baixe o PDF e envie ao RH.",
   ];
