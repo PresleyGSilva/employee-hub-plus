@@ -230,6 +230,7 @@ export type Database = {
           avatar_url: string | null
           base_salary: number | null
           birth_date: string | null
+          cnpj: string | null
           cpf: string | null
           created_at: string
           default_bonus: number | null
@@ -248,6 +249,7 @@ export type Database = {
           avatar_url?: string | null
           base_salary?: number | null
           birth_date?: string | null
+          cnpj?: string | null
           cpf?: string | null
           created_at?: string
           default_bonus?: number | null
@@ -266,6 +268,7 @@ export type Database = {
           avatar_url?: string | null
           base_salary?: number | null
           birth_date?: string | null
+          cnpj?: string | null
           cpf?: string | null
           created_at?: string
           default_bonus?: number | null

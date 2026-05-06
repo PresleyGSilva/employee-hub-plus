@@ -15,6 +15,7 @@ const DOC_CATEGORIES = [
   { key: "comprovante_residencia", label: "Comprovante de Residência" },
   { key: "titulo_eleitor", label: "Título de Eleitor" },
   { key: "auxilio_brasil", label: "Comprovante de Auxílio Brasil" },
+  { key: "cnpj", label: "CNPJ (MEI)" },
 ] as const;
 
 export default function Documents() {
@@ -65,6 +66,7 @@ export default function Documents() {
       pix_key: f.get("pix_key") as string,
       phone: f.get("phone") as string,
       cpf: f.get("cpf") as string,
+      cnpj: f.get("cnpj") as string,
       birth_date: birth,
     }).eq("id", user.id);
     if (error) toast.error(error.message); else { toast.success("Perfil atualizado"); load(); }
@@ -128,6 +130,7 @@ export default function Documents() {
                   <Input name="birth_date" type="date" defaultValue={profile.birth_date ?? ""} />
                 </div>
                 <div><Label>CPF</Label><Input name="cpf" defaultValue={profile.cpf ?? ""} placeholder="000.000.000-00" /></div>
+                <div><Label>CNPJ (caso seja MEI)</Label><Input name="cnpj" defaultValue={profile.cnpj ?? ""} placeholder="00.000.000/0000-00" /></div>
                 <div><Label>Telefone</Label><Input name="phone" defaultValue={profile.phone ?? ""} /></div>
                 <div><Label>Chave PIX</Label><Input name="pix_key" defaultValue={profile.pix_key ?? ""} placeholder="CPF, e-mail, telefone ou aleatória" /></div>
                 <div><Label>E-mail</Label><Input value={profile.email} disabled /></div>
