@@ -135,16 +135,28 @@ export default function Employees() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead><TableHead>E-mail</TableHead><TableHead>Cargo</TableHead>
+                  <TableHead>Admissão</TableHead><TableHead>Próximas férias</TableHead>
                   <TableHead>Salário base</TableHead><TableHead>Bônus</TableHead><TableHead>Comissão</TableHead><TableHead>Hora extra</TableHead><TableHead>PIX</TableHead><TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {list.map((p) => (
+                {list.map((p) => {
+                  const v = vacations[p.id];
+                  const fmtD = (d?: string | null) => d ? new Date(d + "T00:00:00").toLocaleDateString("pt-BR") : "—";
+                  return (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.full_name || "—"}</TableCell>
                     <TableCell>{p.email}</TableCell>
                     <TableCell>{p.position ?? "—"}</TableCell>
+                    <TableCell className="text-sm">{fmtD(p.hire_date)}</TableCell>
+                    <TableCell className="text-sm">
+                      {v ? (
+                        <span className="whitespace-nowrap">
+                          {fmtD(v.vacation_start)} → {fmtD(v.vacation_end)}
+                        </span>
+                      ) : "—"}
+                    </TableCell>
                     <TableCell>{fmtBRL(Number(p.base_salary ?? 0))}</TableCell>
                     <TableCell>{fmtBRL(Number(p.default_bonus ?? 0))}</TableCell>
                     <TableCell>{fmtBRL(Number(p.default_commission ?? 0))}</TableCell>
