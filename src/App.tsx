@@ -24,6 +24,7 @@ import AdminGoals from "./pages/admin/AdminGoals";
 import AdminVacations from "./pages/admin/AdminVacations";
 import Vacations from "./pages/employee/Vacations";
 import EmployeeFolders from "./pages/admin/EmployeeFolders";
+import Teams from "./pages/admin/Teams";
 import Chat from "./pages/Chat";
 import { MessageAlert } from "./components/MessageAlert";
 
