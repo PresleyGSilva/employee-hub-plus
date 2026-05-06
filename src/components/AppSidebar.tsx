@@ -43,6 +43,7 @@ export function AppSidebar() {
 
   const isAdminArea = pathname.startsWith("/admin");
   const items = isAdminArea ? adminItems : employeeItems;
+  const roleLabel = isAdminArea ? "Administrador" : role === "admin" ? "Modo Funcionário" : role === "supervisor" ? "Supervisora" : "Funcionário";
 
   const handleSignOut = async () => {
     await signOut();
@@ -56,7 +57,7 @@ export function AppSidebar() {
           <img src="/logo-tottus.png" alt="Tottus Cred" className={collapsed ? "h-10 w-10 object-contain" : "h-32 w-32 object-contain"} />
           {!collapsed && (
             <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
-              {isAdminArea ? "Administrador" : role === "admin" ? "Modo Funcionário" : "Funcionário"}
+              {roleLabel}
             </span>
           )}
         </div>
