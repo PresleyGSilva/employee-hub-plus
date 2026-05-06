@@ -6,8 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { FolderOpen, Upload, Trash2, FileText, Camera, Cake } from "lucide-react";
+import { FolderOpen, Upload, Trash2, FileText, Camera, Cake, Search, Loader2, Eye } from "lucide-react";
+import { fetchCnpj, formatCep, formatCnpj } from "@/lib/brasilApi";
+import { generateNfseDataPdf } from "@/lib/nfsePdf";
+import { COMPANY } from "@/lib/company";
+import { fmtBRL } from "@/lib/payroll";
 
 const DOC_CATEGORIES = [
   { key: "rg", label: "RG" },
