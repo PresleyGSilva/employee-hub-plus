@@ -61,6 +61,7 @@ const App = () => (
               <Route index element={<AdminHome />} />
               <Route path="funcionarios" element={<Employees />} />
               <Route path="pastas" element={<EmployeeFolders />} />
+              <Route path="equipes" element={<Teams />} />
               <Route path="pontos" element={<AdminTimeEntries />} />
               <Route path="holerites" element={<AdminPayslips />} />
               <Route path="notificacoes" element={<AdminNotifications />} />
