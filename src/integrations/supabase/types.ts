@@ -50,9 +50,12 @@ export type Database = {
           id: string
           reference_month: number
           reference_year: number
+          scope: Database["public"]["Enums"]["goal_scope"]
           target_value: number | null
+          team_id: string | null
           title: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -62,9 +65,12 @@ export type Database = {
           id?: string
           reference_month: number
           reference_year: number
+          scope?: Database["public"]["Enums"]["goal_scope"]
           target_value?: number | null
+          team_id?: string | null
           title: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -74,11 +80,22 @@ export type Database = {
           id?: string
           reference_month?: number
           reference_year?: number
+          scope?: Database["public"]["Enums"]["goal_scope"]
           target_value?: number | null
+          team_id?: string | null
           title?: string
           updated_at?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "goals_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
@@ -257,6 +274,7 @@ export type Database = {
           service_code: string | null
           service_description: string | null
           state: string | null
+          team_id: string | null
           updated_at: string
           zip_code: string | null
         }
@@ -289,6 +307,7 @@ export type Database = {
           service_code?: string | null
           service_description?: string | null
           state?: string | null
+          team_id?: string | null
           updated_at?: string
           zip_code?: string | null
         }
@@ -321,8 +340,44 @@ export type Database = {
           service_code?: string | null
           service_description?: string | null
           state?: string | null
+          team_id?: string | null
           updated_at?: string
           zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          supervisor_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          supervisor_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          supervisor_id?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -493,11 +548,16 @@ export type Database = {
           id: string
         }[]
       }
+      get_user_team: { Args: { _user: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_team_supervisor: {
+        Args: { _team: string; _user: string }
         Returns: boolean
       }
       notify_admins_payslip_response: {
@@ -516,7 +576,8 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "employee"
+      app_role: "admin" | "employee" | "supervisor"
+      goal_scope: "individual" | "team" | "company"
       payslip_status: "pending" | "signed" | "rejected"
       vacation_status:
         | "scheduled"
@@ -652,7 +713,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "employee"],
+      app_role: ["admin", "employee", "supervisor"],
+      goal_scope: ["individual", "team", "company"],
       payslip_status: ["pending", "signed", "rejected"],
       vacation_status: [
         "scheduled",

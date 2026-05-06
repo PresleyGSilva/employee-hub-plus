@@ -6,7 +6,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
-  LayoutDashboard, Clock, FileText, Bell, Target, Users, FolderOpen, LogOut, Shield, User, MessageCircle, Palmtree,
+  LayoutDashboard, Clock, FileText, Bell, Target, Users, FolderOpen, LogOut, Shield, User, MessageCircle, Palmtree, UsersRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -24,6 +24,7 @@ const employeeItems = [
 const adminItems = [
   { title: "Painel Admin", url: "/admin", icon: LayoutDashboard },
   { title: "Funcionários", url: "/admin/funcionarios", icon: Users },
+  { title: "Equipes", url: "/admin/equipes", icon: UsersRound },
   { title: "Pastas", url: "/admin/pastas", icon: FolderOpen },
   { title: "Pontos", url: "/admin/pontos", icon: Clock },
   { title: "Holerites", url: "/admin/holerites", icon: FileText },

@@ -24,6 +24,7 @@ import AdminGoals from "./pages/admin/AdminGoals";
 import AdminVacations from "./pages/admin/AdminVacations";
 import Vacations from "./pages/employee/Vacations";
 import EmployeeFolders from "./pages/admin/EmployeeFolders";
+import Teams from "./pages/admin/Teams";
 import Chat from "./pages/Chat";
 import { MessageAlert } from "./components/MessageAlert";
 
@@ -60,6 +61,7 @@ const App = () => (
               <Route index element={<AdminHome />} />
               <Route path="funcionarios" element={<Employees />} />
               <Route path="pastas" element={<EmployeeFolders />} />
+              <Route path="equipes" element={<Teams />} />
               <Route path="pontos" element={<AdminTimeEntries />} />
               <Route path="holerites" element={<AdminPayslips />} />
               <Route path="notificacoes" element={<AdminNotifications />} />
