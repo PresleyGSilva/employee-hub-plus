@@ -196,16 +196,17 @@ export default function Employees() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Funcionários</h1>
-        <Button variant="outline" onClick={() => setPosOpen(true)}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h1 className="text-2xl sm:text-3xl font-bold">Funcionários</h1>
+        <Button variant="outline" onClick={() => setPosOpen(true)} className="w-full sm:w-auto">
           <Briefcase className="h-4 w-4 mr-2" /> Gerenciar cargos
         </Button>
       </div>
       <Card>
         <CardHeader><CardTitle>Lista ({list.length})</CardTitle></CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          {/* Desktop table */}
+          <div className="hidden lg:block overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -264,9 +265,56 @@ export default function Employees() {
                   </TableRow>
                   );
                 })}
-                {list.length === 0 && <TableRow><TableCell colSpan={12} className="text-center py-8 text-muted-foreground">Nenhum funcionário cadastrado.</TableCell></TableRow>}
+                {list.length === 0 && <TableRow><TableCell colSpan={13} className="text-center py-8 text-muted-foreground">Nenhum funcionário cadastrado.</TableCell></TableRow>}
               </TableBody>
             </Table>
+          </div>
+
+          {/* Mobile/Tablet cards */}
+          <div className="lg:hidden space-y-3">
+            {list.map((p) => {
+              const v = vacations[p.id];
+              const t = teams.find((x) => x.id === p.team_id);
+              const fmtD = (d?: string | null) => d ? new Date(d + "T00:00:00").toLocaleDateString("pt-BR") : "—";
+              return (
+                <div key={p.id} className="rounded-lg border p-3 space-y-2 bg-card">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold truncate">{p.full_name || "—"}</div>
+                      <div className="text-xs text-muted-foreground truncate">{p.email}</div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      {p.isAdmin && <Badge className="bg-accent text-accent-foreground">Admin</Badge>}
+                      {p.isSupervisor && !p.isAdmin && <Badge className="bg-primary/20 text-primary">Supervisora</Badge>}
+                      {p.active ? <Badge variant="outline" className="border-success text-success">Ativo</Badge> : <Badge variant="destructive">Inativo</Badge>}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                    <div><span className="text-muted-foreground">Cargo: </span>{p.position ?? "—"}</div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">Equipe: </span>
+                      {t ? (<><span className="h-2 w-2 rounded-full" style={{ background: t.color }} />{t.name}</>) : "—"}
+                    </div>
+                    <div><span className="text-muted-foreground">Admissão: </span>{fmtD(p.hire_date)}</div>
+                    <div><span className="text-muted-foreground">Férias: </span>{v ? `${fmtD(v.vacation_start)}→${fmtD(v.vacation_end)}` : "—"}</div>
+                    <div><span className="text-muted-foreground">Salário: </span>{fmtBRL(Number(p.base_salary ?? 0))}</div>
+                    <div><span className="text-muted-foreground">Bônus: </span>{fmtBRL(Number(p.default_bonus ?? 0))}</div>
+                    <div><span className="text-muted-foreground">Comissão: </span>{fmtBRL(Number(p.default_commission ?? 0))}</div>
+                    <div><span className="text-muted-foreground">Hora extra: </span>{fmtBRL(Number(p.overtime_hour_rate ?? 0))}</div>
+                    <div className="col-span-2 truncate"><span className="text-muted-foreground">PIX: </span><span className="font-mono">{p.pix_key ?? "—"}</span></div>
+                  </div>
+                  <div className="flex flex-wrap gap-1 pt-1 border-t">
+                    <Button size="sm" variant="ghost" onClick={() => openDocs(p)}><FileText className="h-4 w-4 mr-1" />Docs</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setPwdOpen(p)}><KeyRound className="h-4 w-4 mr-1" />Senha</Button>
+                    <Button size="sm" variant="ghost" onClick={() => toggleAdmin(p)}>
+                      {p.isAdmin ? <ShieldOff className="h-4 w-4 mr-1" /> : <Shield className="h-4 w-4 mr-1" />}Admin
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => openEdit(p)}><Pencil className="h-4 w-4 mr-1" />Editar</Button>
+                  </div>
+                </div>
+              );
+            })}
+            {list.length === 0 && <div className="text-center py-8 text-muted-foreground">Nenhum funcionário cadastrado.</div>}
           </div>
         </CardContent>
       </Card>
