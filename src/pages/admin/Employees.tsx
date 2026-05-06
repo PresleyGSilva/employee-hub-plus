@@ -159,7 +159,7 @@ export default function Employees() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nome</TableHead><TableHead>E-mail</TableHead><TableHead>Cargo</TableHead>
+                  <TableHead>Nome</TableHead><TableHead>E-mail</TableHead><TableHead>Cargo</TableHead><TableHead>Equipe</TableHead>
                   <TableHead>Admissão</TableHead><TableHead>Próximas férias</TableHead>
                   <TableHead>Salário base</TableHead><TableHead>Bônus</TableHead><TableHead>Comissão</TableHead><TableHead>Hora extra</TableHead><TableHead>PIX</TableHead><TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
