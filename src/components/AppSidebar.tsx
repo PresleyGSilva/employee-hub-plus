@@ -24,6 +24,7 @@ const employeeItems = [
 const adminItems = [
   { title: "Painel Admin", url: "/admin", icon: LayoutDashboard },
   { title: "Funcionários", url: "/admin/funcionarios", icon: Users },
+  { title: "Equipes", url: "/admin/equipes", icon: UsersRound },
   { title: "Pastas", url: "/admin/pastas", icon: FolderOpen },
   { title: "Pontos", url: "/admin/pontos", icon: Clock },
   { title: "Holerites", url: "/admin/holerites", icon: FileText },
