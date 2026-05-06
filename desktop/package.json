@@ -17,7 +17,7 @@
     "productName": "Tottus Cred",
     "files": ["main.js", "preload.js", "icon.ico", "icon.png"],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "target": [{ "target": "nsis", "arch": ["x64", "ia32"] }],
       "icon": "icon.ico"
     },
     "nsis": {
