@@ -435,17 +435,17 @@ function UpdateSalesPanel({ teamGoals, members, individualGoals, onSaved }: { te
 
   const save = async () => {
     setBusy(true);
-    const updates: Promise<any>[] = [];
+    const updates: PromiseLike<any>[] = [];
     for (const g of individualGoals) {
       const v = Number(values[g.id] ?? 0);
       if (v !== Number(g.current_value || 0)) {
-        updates.push(supabase.from("goals").update({ current_value: v }).eq("id", g.id));
+        updates.push(supabase.from("goals").update({ current_value: v }).eq("id", g.id).then((r) => r));
       }
     }
     for (const g of teamGoals) {
       const v = Number(teamValues[g.id] ?? 0);
       if (v !== Number(g.current_value || 0)) {
-        updates.push(supabase.from("goals").update({ current_value: v }).eq("id", g.id));
+        updates.push(supabase.from("goals").update({ current_value: v }).eq("id", g.id).then((r) => r));
       }
     }
     const res = await Promise.all(updates);
