@@ -69,6 +69,7 @@ export default function Employees() {
       pix_key: f.get("pix_key") as string,
       phone: f.get("phone") as string,
       position: editPosition || null,
+      team_id: editTeam || null,
       base_salary: Number(f.get("base_salary")),
       default_bonus: Number(f.get("default_bonus")),
       default_commission: Number(f.get("default_commission")),
@@ -77,8 +78,19 @@ export default function Employees() {
       active: f.get("active") === "on",
       is_mei: f.get("is_mei") === "on",
     }).eq("id", editing.id);
-    if (error) toast.error(error.message);
-    else { toast.success("Atualizado"); setEditing(null); load(); }
+    if (error) { toast.error(error.message); return; }
+
+    // Sync roles: keep only the selected one (admin/supervisor/employee)
+    await supabase.from("user_roles").delete().eq("user_id", editing.id).in("role", ["admin", "supervisor"] as any);
+    if (editRole === "admin") {
+      await supabase.from("user_roles").insert({ user_id: editing.id, role: "admin" as any });
+    } else if (editRole === "supervisor") {
+      await supabase.from("user_roles").insert({ user_id: editing.id, role: "supervisor" as any });
+      // If she's supervisor of a team, mark the team
+      if (editTeam) await supabase.from("teams").update({ supervisor_id: editing.id }).eq("id", editTeam);
+    }
+
+    toast.success("Atualizado"); setEditing(null); load();
   };
 
   const toggleAdmin = async (p: any) => {
