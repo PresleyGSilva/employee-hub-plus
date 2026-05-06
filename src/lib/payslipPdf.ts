@@ -52,9 +52,10 @@ async function loadLogoDataUrl() { return loadDataUrl(logoUrl); }
 export interface PayslipPdfData {
   payslip: any;
   employee: { full_name: string; cpf?: string | null; pix_key?: string | null; email: string };
+  employeeSignatureDataUrl?: string | null;
 }
 
-export async function generatePayslipPdf({ payslip, employee }: PayslipPdfData): Promise<jsPDF> {
+export async function generatePayslipPdf({ payslip, employee, employeeSignatureDataUrl }: PayslipPdfData): Promise<jsPDF> {
   const doc = new jsPDF();
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
