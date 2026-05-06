@@ -81,6 +81,7 @@ export default function Goals() {
   // Supervisor: members of my team
   const myTeam = teams.find((t) => t.id === activeTeamId);
   const isSupervisor = role === "supervisor";
+  const isEmployee = role === "employee";
   const teamMembers = profiles.filter((p) => p.team_id === activeTeamId);
 
   const distSum = Object.values(distAlloc).reduce((s, v) => s + (Number(v) || 0), 0);
