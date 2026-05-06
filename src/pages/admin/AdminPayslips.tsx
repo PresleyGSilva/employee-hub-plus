@@ -13,6 +13,7 @@ import { Sparkles, CheckCircle2, Download, Upload, Trash2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { generatePayslipPdf } from "@/lib/payslipPdf";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function AdminPayslips() {
   const now = new Date();
@@ -245,10 +246,17 @@ export default function AdminPayslips() {
                   <span>Líquido</span><span className="text-primary">{fmtBRL(Number(view.total_net))}</span>
                 </div>
                 {view.status === "rejected" && (
-                  <div className="mt-4 pt-4 border-t rounded-lg bg-destructive/10 p-3 text-sm">
+                  <div className="mt-4 pt-4 border-t rounded-lg bg-destructive/10 p-3 text-sm space-y-2">
                     <p className="font-semibold text-destructive">Funcionário NÃO concordou</p>
                     {view.responded_at && <p className="text-xs text-muted-foreground">em {new Date(view.responded_at).toLocaleString("pt-BR")}</p>}
-                    {view.rejection_reason && <p className="mt-2"><strong>Motivo:</strong> {view.rejection_reason}</p>}
+                    {view.rejection_reason && <p><strong>Motivo:</strong> {view.rejection_reason}</p>}
+                    <ReopenBlock payslip={view} onDone={() => { setView(null); load(); }} />
+                  </div>
+                )}
+                {view.admin_response && view.status !== "rejected" && (
+                  <div className="mt-4 pt-4 border-t rounded-lg bg-primary/10 p-3 text-sm">
+                    <p className="font-semibold">Resposta do RH enviada:</p>
+                    <p className="mt-1">{view.admin_response}</p>
                   </div>
                 )}
                 {sigUrl && (
@@ -275,4 +283,32 @@ export default function AdminPayslips() {
 }
 function Row({ label, value }: { label: string; value: string }) {
   return <div className="flex justify-between"><span className="text-muted-foreground">{label}</span><span className="font-medium">{value}</span></div>;
+}
+
+function ReopenBlock({ payslip, onDone }: { payslip: any; onDone: () => void }) {
+  const [reply, setReply] = useState("");
+  const [busy, setBusy] = useState(false);
+  const submit = async () => {
+    if (!reply.trim()) { toast.error("Escreva uma resposta para o funcionário"); return; }
+    setBusy(true);
+    const { error } = await supabase.rpc("reopen_payslip", { _payslip_id: payslip.id, _admin_response: reply.trim() });
+    setBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Holerite liberado novamente para o funcionário");
+    onDone();
+  };
+  return (
+    <div className="space-y-2 pt-2 border-t border-destructive/20">
+      <Label className="text-xs">Resposta do RH (será enviada ao funcionário)</Label>
+      <Textarea value={reply} onChange={(e) => setReply(e.target.value)}
+        placeholder="Explique a correção ou esclarecimento..." maxLength={500} rows={3} />
+      <Button size="sm" disabled={busy} onClick={submit}
+        className="gradient-primary text-primary-foreground border-0">
+        Resolver e liberar novamente
+      </Button>
+      <p className="text-xs text-muted-foreground">
+        Caso não cheguem a um acordo, o funcionário pode falar com o RH pelo chat.
+      </p>
+    </div>
+  );
 }

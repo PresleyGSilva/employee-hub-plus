@@ -141,6 +141,7 @@ export type Database = {
         Row: {
           absence_deduction: number
           absent_days: number
+          admin_response: string | null
           base_salary: number
           bonus: number
           created_at: string
@@ -163,6 +164,7 @@ export type Database = {
         Insert: {
           absence_deduction?: number
           absent_days?: number
+          admin_response?: string | null
           base_salary?: number
           bonus?: number
           created_at?: string
@@ -185,6 +187,7 @@ export type Database = {
         Update: {
           absence_deduction?: number
           absent_days?: number
+          admin_response?: string | null
           base_salary?: number
           bonus?: number
           created_at?: string
@@ -471,6 +474,10 @@ export type Database = {
         Returns: undefined
       }
       notify_today_birthdays: { Args: never; Returns: number }
+      reopen_payslip: {
+        Args: { _admin_response: string; _payslip_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "employee"

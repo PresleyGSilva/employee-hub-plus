@@ -189,6 +189,16 @@ export default function Payslips() {
                   </div>
                 ) : (
                   <div className="space-y-3">
+                    {open.admin_response && (
+                      <div className="rounded-lg border bg-primary/10 p-3 text-sm">
+                        <p className="font-semibold">Resposta do RH:</p>
+                        <p className="mt-1">{open.admin_response}</p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          O RH revisou seu holerite. Confira novamente os valores e responda abaixo.
+                          Se ainda discordar, você pode falar com o RH pelo <a href="/app/chat" className="underline text-primary">chat</a>.
+                        </p>
+                      </div>
+                    )}
                     <div>
                       <label className="text-sm font-medium">Motivo (caso não concorde)</label>
                       <Textarea value={reason} onChange={(e) => setReason(e.target.value)}
