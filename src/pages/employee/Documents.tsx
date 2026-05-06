@@ -66,6 +66,7 @@ export default function Documents() {
       pix_key: f.get("pix_key") as string,
       phone: f.get("phone") as string,
       cpf: f.get("cpf") as string,
+      cnpj: f.get("cnpj") as string,
       birth_date: birth,
     }).eq("id", user.id);
     if (error) toast.error(error.message); else { toast.success("Perfil atualizado"); load(); }
