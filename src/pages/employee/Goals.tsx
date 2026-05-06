@@ -342,6 +342,17 @@ export default function Goals() {
           </TabsContent>
         )}
 
+        {isSupervisor && (
+          <TabsContent value="update" className="space-y-4 mt-4">
+            <UpdateSalesPanel
+              teamGoals={myTeamGoals}
+              members={teamMembers}
+              individualGoals={goals.filter((g) => g.scope === "individual" && teamMembers.some((m) => m.id === g.user_id))}
+              onSaved={load}
+            />
+          </TabsContent>
+        )}
+
         <TabsContent value="ranking" className="space-y-4 mt-4">
           <Card>
             <CardHeader><CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" /> Equipes</CardTitle></CardHeader>
