@@ -85,6 +85,53 @@ export default function AdminGoals() {
     return "👤 " + (profiles.find((p) => p.id === g.user_id)?.full_name ?? "Individual");
   };
 
+  const distSum = Object.values(distAlloc).reduce((s, v) => s + (Number(v) || 0), 0);
+  const distRemaining = Number(distTotal || 0) - distSum;
+
+  const autoDistribute = () => {
+    if (!teams.length || !distTotal) return;
+    const each = Math.floor((Number(distTotal) / teams.length) * 100) / 100;
+    const map: Record<string, number> = {};
+    teams.forEach((t, idx) => {
+      map[t.id] = idx === teams.length - 1
+        ? Math.round((Number(distTotal) - each * (teams.length - 1)) * 100) / 100
+        : each;
+    });
+    setDistAlloc(map);
+  };
+
+  const submitDistribution = async () => {
+    if (!distTitle.trim()) return toast.error("Informe o título");
+    if (!distTotal || distTotal <= 0) return toast.error("Informe a meta total");
+    if (Math.abs(distRemaining) > 0.01) return toast.error(`A soma (${distSum.toLocaleString("pt-BR")}) deve ser igual à meta total (${Number(distTotal).toLocaleString("pt-BR")})`);
+    setDistBusy(true);
+    // 1) Empresa
+    const { error: cErr } = await supabase.from("goals").insert({
+      title: distTitle, description: distDesc || null,
+      reference_month: distMonth, reference_year: distYear,
+      target_value: Number(distTotal), current_value: 0,
+      scope: "company", created_by: user?.id,
+    });
+    if (cErr) { setDistBusy(false); return toast.error(cErr.message); }
+    // 2) Equipes
+    const rows = teams
+      .filter((t) => Number(distAlloc[t.id] || 0) > 0)
+      .map((t) => ({
+        title: distTitle, description: distDesc || null,
+        reference_month: distMonth, reference_year: distYear,
+        target_value: Number(distAlloc[t.id]), current_value: 0,
+        scope: "team" as const, team_id: t.id, created_by: user?.id,
+      }));
+    if (rows.length) {
+      const { error: tErr } = await supabase.from("goals").insert(rows);
+      if (tErr) { setDistBusy(false); return toast.error(tErr.message); }
+    }
+    setDistBusy(false);
+    toast.success("Meta da empresa distribuída entre as equipes!");
+    setDistTitle(""); setDistDesc(""); setDistTotal(0); setDistAlloc({});
+    load();
+  };
+
   // Aggregated team progress (sum of individual goals in same month/year)
   const teamAggregate = (teamId: string, month: number, year: number) => {
     const members = profiles.filter((p) => p.team_id === teamId).map((p) => p.id);
