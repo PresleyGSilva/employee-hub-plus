@@ -142,6 +142,8 @@ export default function AdminPayslips() {
                     <TableCell className="font-bold">{fmtBRL(Number(p.total_net))}</TableCell>
                     <TableCell>{p.status === "signed"
                       ? <Badge className="bg-success text-success-foreground"><CheckCircle2 className="h-3 w-3 mr-1" />Assinado</Badge>
+                      : p.status === "rejected"
+                      ? <Badge variant="destructive" title={p.rejection_reason ?? ""}>Não concordou</Badge>
                       : <Badge variant="outline" className="border-warning text-warning">Pendente</Badge>}</TableCell>
                     <TableCell>
                       <div className="flex gap-1 flex-wrap">
