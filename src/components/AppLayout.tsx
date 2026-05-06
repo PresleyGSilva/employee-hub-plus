@@ -25,10 +25,10 @@ export default function AppLayout({ requireAdmin = false }: { requireAdmin?: boo
       <div className="min-h-screen flex w-full bg-muted/30">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center gap-2 border-b bg-background/80 backdrop-blur sticky top-0 z-20 px-3">
+          <header className="h-14 flex items-center gap-2 border-b bg-background/80 backdrop-blur sticky top-0 z-20 px-2 sm:px-3">
             <SidebarTrigger />
-            <div className="ml-auto flex items-center gap-3">
-              <span className="text-xs text-muted-foreground hidden sm:inline">
+            <div className="ml-auto flex items-center gap-2 sm:gap-3">
+              <span className="text-xs text-muted-foreground hidden md:inline">
                 {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}
               </span>
               <Button variant="ghost" size="icon" onClick={toggle} aria-label="Alternar tema">
@@ -36,7 +36,7 @@ export default function AppLayout({ requireAdmin = false }: { requireAdmin?: boo
               </Button>
             </div>
           </header>
-          <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto">
+          <main className="flex-1 p-3 sm:p-4 md:p-8 max-w-7xl w-full mx-auto">
             <Outlet />
           </main>
         </div>
