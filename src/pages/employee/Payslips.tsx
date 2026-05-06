@@ -6,83 +6,35 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { fmtBRL, fmtMinutes, monthNames } from "@/lib/payroll";
-import { toast } from "sonner";
-import { FileText, CheckCircle2, Download, Upload, ShieldCheck } from "lucide-react";
-import { generatePayslipPdf } from "@/lib/payslipPdf";
-import { checkGovBrSignature } from "@/lib/govSignature";
+import { FileText, CheckCircle2, Info } from "lucide-react";
 
 export default function Payslips() {
   const { user } = useAuth();
   const [list, setList] = useState<any[]>([]);
-  const [profile, setProfile] = useState<any>(null);
   const [open, setOpen] = useState<any>(null);
-  const [busy, setBusy] = useState(false);
 
   const load = async () => {
     if (!user) return;
-    const [{ data }, { data: p }] = await Promise.all([
-      supabase.from("payslips").select("*").eq("user_id", user.id)
-        .order("reference_year", { ascending: false }).order("reference_month", { ascending: false }),
-      supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
-    ]);
+    const { data } = await supabase.from("payslips").select("*").eq("user_id", user.id)
+      .order("reference_year", { ascending: false }).order("reference_month", { ascending: false });
     setList(data ?? []);
-    setProfile(p);
   };
   useEffect(() => { load(); }, [user]);
-
-  const downloadPdf = async (p: any) => {
-    if (!profile) return;
-    const doc = await generatePayslipPdf({ payslip: p, employee: profile });
-    doc.save(`holerite-${monthNames[p.reference_month - 1]}-${p.reference_year}.pdf`);
-    toast.success("PDF gerado! Assine e faça o upload de volta.");
-  };
-
-  const uploadSigned = async (e: React.ChangeEvent<HTMLInputElement>, p: any) => {
-    if (!user || !e.target.files?.[0]) return;
-    const file = e.target.files[0];
-    if (file.size > 10 * 1024 * 1024) { toast.error("Máximo 10MB"); return; }
-
-    setBusy(true);
-    const check = await checkGovBrSignature(file);
-    if (!check.isPdf) {
-      setBusy(false); e.target.value = "";
-      toast.error("Envie o arquivo PDF assinado pelo gov.br");
-      return;
-    }
-    if (!check.hasDigitalSignature) {
-      setBusy(false); e.target.value = "";
-      toast.error("Este PDF não contém assinatura digital. Assine em assinador.iti.br (gov.br) e envie novamente.");
-      return;
-    }
-    if (!check.isGovBr) {
-      setBusy(false); e.target.value = "";
-      toast.error("Assinatura digital encontrada, mas não foi reconhecida como gov.br / ICP-Brasil. Use o assinador gov.br.");
-      return;
-    }
-
-    const path = `${user.id}/${p.id}-assinado.pdf`;
-    const { error: upErr } = await supabase.storage.from("payslip-documents").upload(path, file, { upsert: true, contentType: "application/pdf" });
-    if (upErr) { setBusy(false); toast.error(upErr.message); return; }
-    const { error } = await supabase.from("payslips").update({
-      status: "signed", signed_document_path: path, signed_at: new Date().toISOString(),
-    }).eq("id", p.id);
-    setBusy(false);
-    e.target.value = "";
-    if (error) toast.error(error.message);
-    else { toast.success("Holerite assinado pelo gov.br enviado!"); setOpen(null); load(); }
-  };
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Meus Holerites</h1>
 
-      {profile && (!profile.cpf || !profile.pix_key) && (
-        <Card className="border-warning">
-          <CardContent className="p-4 text-sm">
-            ⚠️ Complete seu cadastro em <b>Documentos</b> (CPF e Chave PIX) para gerar o Termo de Quitação corretamente.
-          </CardContent>
-        </Card>
-      )}
+      <Card className="border-primary/30 bg-primary/5">
+        <CardContent className="p-4 text-sm flex gap-3">
+          <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+          <div>
+            O holerite em PDF é entregue pelo RH/Administração para assinatura.
+            Após assinar e devolver, o documento assinado ficará disponível na sua pasta.
+            Aqui você pode consultar os valores de cada mês.
+          </div>
+        </CardContent>
+      </Card>
 
       {list.length === 0 ? (
         <Card><CardContent className="py-16 text-center text-muted-foreground">
@@ -102,7 +54,7 @@ export default function Payslips() {
                   {p.status === "signed"
                     ? <Badge className="bg-success text-success-foreground"><CheckCircle2 className="h-3 w-3 mr-1" />Assinado</Badge>
                     : <Badge variant="outline" className="border-warning text-warning">Pendente</Badge>}
-                  <Button size="sm" variant="outline" onClick={() => setOpen(p)}>Ver / Assinar</Button>
+                  <Button size="sm" variant="outline" onClick={() => setOpen(p)}>Ver detalhes</Button>
                 </div>
               </CardContent>
             </Card>
@@ -129,38 +81,14 @@ export default function Payslips() {
                   </div>
                 </div>
 
-                {open.status === "pending" ? (
-                  <div className="space-y-4">
-                    <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 space-y-3">
-                      <p className="text-sm font-semibold flex items-center gap-2">
-                        <ShieldCheck className="h-4 w-4 text-primary" /> Assinatura digital gov.br (obrigatória)
-                      </p>
-                      <ol className="text-xs text-muted-foreground list-decimal pl-4 space-y-1">
-                        <li>Baixe o Termo de Quitação em PDF abaixo.</li>
-                        <li>Acesse <a href="https://assinador.iti.br" target="_blank" rel="noreferrer" className="text-primary underline">assinador.iti.br</a> e assine com sua conta gov.br.</li>
-                        <li>Envie aqui o PDF assinado. Apenas PDFs com assinatura gov.br são aceitos.</li>
-                      </ol>
-                      <div className="flex flex-wrap gap-2 pt-1">
-                        <Button size="sm" variant="outline" onClick={() => downloadPdf(open)}>
-                          <Download className="h-4 w-4 mr-2" /> Baixar Termo
-                        </Button>
-                        <label>
-                          <input type="file" accept="application/pdf,.pdf" className="hidden"
-                            onChange={(e) => uploadSigned(e, open)} disabled={busy} />
-                          <Button size="sm" asChild disabled={busy} className="gradient-primary text-primary-foreground border-0">
-                            <span className="cursor-pointer"><Upload className="h-4 w-4 mr-2" /> Enviar PDF assinado (gov.br)</span>
-                          </Button>
-                        </label>
-                      </div>
-                    </div>
+                {open.status === "signed" ? (
+                  <div className="rounded-lg border bg-success/10 p-4 text-sm">
+                    <CheckCircle2 className="h-5 w-5 inline mr-2 text-success" />
+                    Assinado em {new Date(open.signed_at).toLocaleString("pt-BR")}
                   </div>
                 ) : (
-                  <div className="rounded-lg border bg-success/10 p-4 text-sm space-y-2">
-                    <div><CheckCircle2 className="h-5 w-5 inline mr-2 text-success" />
-                    Assinado em {new Date(open.signed_at).toLocaleString("pt-BR")}</div>
-                    <Button size="sm" variant="outline" onClick={() => downloadPdf(open)}>
-                      <Download className="h-4 w-4 mr-2" /> Baixar Termo
-                    </Button>
+                  <div className="rounded-lg border bg-warning/10 p-4 text-sm">
+                    Aguardando entrega do PDF pelo RH para assinatura.
                   </div>
                 )}
               </div>
