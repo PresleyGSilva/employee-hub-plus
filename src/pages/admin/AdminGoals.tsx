@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Trash2, Plus, Trophy, Users, User } from "lucide-react";
+import { Trash2, Plus, Trophy, Users, User, Wand2 } from "lucide-react";
 import { monthNames } from "@/lib/payroll";
 
 export default function AdminGoals() {
