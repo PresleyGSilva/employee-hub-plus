@@ -234,6 +234,7 @@ export type Database = {
           base_salary: number | null
           birth_date: string | null
           cnpj: string | null
+          company_name: string | null
           cpf: string | null
           created_at: string
           default_bonus: number | null
@@ -255,6 +256,7 @@ export type Database = {
           base_salary?: number | null
           birth_date?: string | null
           cnpj?: string | null
+          company_name?: string | null
           cpf?: string | null
           created_at?: string
           default_bonus?: number | null
@@ -276,6 +278,7 @@ export type Database = {
           base_salary?: number | null
           birth_date?: string | null
           cnpj?: string | null
+          company_name?: string | null
           cpf?: string | null
           created_at?: string
           default_bonus?: number | null

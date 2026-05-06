@@ -44,7 +44,7 @@ export function generateNfseDataPdf(opts: {
 
   section("PRESTADOR DO SERVIÇO (você)");
   row("CNPJ:", employee.cnpj || "—");
-  row("Nome empresarial:", employee.full_name || "—");
+  row("Nome empresarial:", employee.company_name || employee.full_name || "—");
   row("Chave PIX:", employee.pix_key || "—");
   y += 3;
 

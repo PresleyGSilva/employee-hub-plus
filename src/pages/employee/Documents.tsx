@@ -67,6 +67,7 @@ export default function Documents() {
       phone: f.get("phone") as string,
       cpf: f.get("cpf") as string,
       cnpj: f.get("cnpj") as string,
+      company_name: (f.get("company_name") as string) || null,
       birth_date: birth,
     }).eq("id", user.id);
     if (error) toast.error(error.message); else { toast.success("Perfil atualizado"); load(); }
@@ -131,6 +132,7 @@ export default function Documents() {
                 </div>
                 <div><Label>CPF</Label><Input name="cpf" defaultValue={profile.cpf ?? ""} placeholder="000.000.000-00" /></div>
                 <div><Label>CNPJ (caso seja MEI)</Label><Input name="cnpj" defaultValue={profile.cnpj ?? ""} placeholder="00.000.000/0000-00" /></div>
+                <div className="sm:col-span-2"><Label>Razão social do MEI (como aparecerá na NFS-e)</Label><Input name="company_name" defaultValue={profile.company_name ?? ""} placeholder="Ex.: 63.658.468 LARISSA COSTA SANTOS" /></div>
                 <div><Label>Telefone</Label><Input name="phone" defaultValue={profile.phone ?? ""} /></div>
                 <div><Label>Chave PIX</Label><Input name="pix_key" defaultValue={profile.pix_key ?? ""} placeholder="CPF, e-mail, telefone ou aleatória" /></div>
                 <div><Label>E-mail</Label><Input value={profile.email} disabled /></div>
