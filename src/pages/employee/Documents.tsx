@@ -28,6 +28,48 @@ export default function Documents() {
   const [docs, setDocs] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
   const [busy, setBusy] = useState(false);
+  const [cnpjValue, setCnpjValue] = useState("");
+  const [cnpjBusy, setCnpjBusy] = useState(false);
+  const [cnpjData, setCnpjData] = useState<any>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  const lookupCnpj = async (raw: string, silent = false) => {
+    const clean = raw.replace(/\D/g, "");
+    if (clean.length !== 14) {
+      if (!silent) toast.error("CNPJ deve ter 14 dígitos");
+      return;
+    }
+    setCnpjBusy(true);
+    const data = await fetchCnpj(clean);
+    setCnpjBusy(false);
+    if (!data) {
+      if (!silent) toast.error("CNPJ não encontrado na Receita");
+      return;
+    }
+    setCnpjData(data);
+    if (!user) return;
+    const opening = data.data_inicio_atividade ? data.data_inicio_atividade.slice(0, 10) : null;
+    const { error } = await supabase.from("profiles").update({
+      cnpj: formatCnpj(clean),
+      company_name: data.razao_social || data.nome_fantasia || null,
+      address: data.logradouro || null,
+      address_number: data.numero || null,
+      neighborhood: data.bairro || null,
+      city: data.municipio || null,
+      state: data.uf || null,
+      zip_code: formatCep(data.cep) || null,
+      opening_date: opening,
+      service_code: profile?.service_code || "17.22.01",
+      service_description: data.cnae_fiscal_descricao || profile?.service_description || null,
+    }).eq("id", user.id);
+    if (error) toast.error(error.message);
+    else { toast.success("Dados do CNPJ preenchidos automaticamente!"); load(); }
+  };
+
+  useEffect(() => {
+    if (profile?.cnpj && !cnpjValue) setCnpjValue(profile.cnpj);
+  }, [profile]);
+
 
   const load = async () => {
     if (!user) return;
