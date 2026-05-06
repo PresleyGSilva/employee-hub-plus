@@ -200,6 +200,7 @@ export default function Employees() {
                     <TableCell className="font-mono text-xs">{p.pix_key ?? "—"}</TableCell>
                     <TableCell>
                       {p.isAdmin && <Badge className="mr-1 bg-accent text-accent-foreground">Admin</Badge>}
+                      {p.isSupervisor && !p.isAdmin && <Badge className="mr-1 bg-primary/20 text-primary">Supervisora</Badge>}
                       {p.active ? <Badge variant="outline" className="border-success text-success">Ativo</Badge> : <Badge variant="destructive">Inativo</Badge>}
                     </TableCell>
                     <TableCell className="text-right space-x-1">
