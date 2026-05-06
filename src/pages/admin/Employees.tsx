@@ -185,7 +185,7 @@ export default function Employees() {
       </Card>
 
       <Dialog open={!!editing} onOpenChange={() => setEditing(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           {editing && (
             <>
               <DialogHeader><DialogTitle>Editar funcionário</DialogTitle></DialogHeader>
