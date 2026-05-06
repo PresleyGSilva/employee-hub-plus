@@ -147,58 +147,8 @@ export default function AdminGoals() {
 
       {role === "admin" && (
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><Plus className="h-5 w-5" /> Nova meta</CardTitle></CardHeader>
-          <CardContent>
-            <form onSubmit={create} className="grid gap-3 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <Label>Tipo de meta</Label>
-                <Select value={scope} onValueChange={(v: any) => setScope(v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="individual"><User className="h-3 w-3 inline mr-1" /> Individual (uma funcionária)</SelectItem>
-                    <SelectItem value="team"><Users className="h-3 w-3 inline mr-1" /> Equipe (meta-alvo da equipe)</SelectItem>
-                    <SelectItem value="company"><Trophy className="h-3 w-3 inline mr-1" /> Empresa toda</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {scope === "individual" && (
-                <div className="sm:col-span-2"><Label>Funcionária</Label>
-                  <Select value={targetUser} onValueChange={setTargetUser}>
-                    <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
-                    <SelectContent>{profiles.map((p) => <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              )}
-              {scope === "team" && (
-                <div className="sm:col-span-2"><Label>Equipe</Label>
-                  <Select value={targetTeam} onValueChange={setTargetTeam}>
-                    <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
-                    <SelectContent>{teams.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              )}
-              <div className="sm:col-span-2"><Label>Título</Label><Input name="title" required maxLength={100} /></div>
-              <div className="sm:col-span-2"><Label>Descrição</Label><Textarea name="description" rows={2} maxLength={300} /></div>
-              <div><Label>Mês</Label>
-                <Select name="month" defaultValue={String(now.getMonth() + 1)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{monthNames.map((n, i) => <SelectItem key={i} value={String(i + 1)}>{n}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div><Label>Ano</Label><Input name="year" type="number" defaultValue={now.getFullYear()} required /></div>
-              <div><Label>Valor alvo</Label><Input name="target" type="number" step="0.01" required /></div>
-              <div className="flex items-end">
-                <Button type="submit" disabled={busy} className="w-full gradient-primary text-primary-foreground border-0">Criar meta</Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
-
-      {role === "admin" && (
-        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Wand2 className="h-5 w-5" /> Distribuir meta da empresa entre as equipes</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Plus className="h-5 w-5" /> Nova meta da empresa</CardTitle>
             <p className="text-sm text-muted-foreground">Defina a meta total da empresa e quanto cada equipe precisa entregar. A soma deve ser igual ao total.</p>
           </CardHeader>
           <CardContent className="space-y-4">
