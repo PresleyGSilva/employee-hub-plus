@@ -227,13 +227,17 @@ export default function Employees() {
                     <TableCell>{p.position ?? "—"}</TableCell>
                     <TableCell className="text-sm">
                       {(() => {
-                        const t = teams.find((x) => x.id === p.team_id);
-                        return t ? (
+                        const supTeam = teams.find((x) => x.supervisor_id === p.id);
+                        const memberTeam = teams.find((x) => x.id === p.team_id);
+                        const t = supTeam || memberTeam;
+                        if (!t) return "—";
+                        return (
                           <span className="inline-flex items-center gap-1">
                             <span className="h-2 w-2 rounded-full" style={{ background: t.color }} />
                             {t.name}
+                            {supTeam && <span className="text-[10px] text-primary ml-1">(supervisora)</span>}
                           </span>
-                        ) : "—";
+                        );
                       })()}
                     </TableCell>
                     <TableCell className="text-sm">{fmtD(p.hire_date)}</TableCell>
