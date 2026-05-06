@@ -130,6 +130,7 @@ export default function Documents() {
                   <Input name="birth_date" type="date" defaultValue={profile.birth_date ?? ""} />
                 </div>
                 <div><Label>CPF</Label><Input name="cpf" defaultValue={profile.cpf ?? ""} placeholder="000.000.000-00" /></div>
+                <div><Label>CNPJ (caso seja MEI)</Label><Input name="cnpj" defaultValue={profile.cnpj ?? ""} placeholder="00.000.000/0000-00" /></div>
                 <div><Label>Telefone</Label><Input name="phone" defaultValue={profile.phone ?? ""} /></div>
                 <div><Label>Chave PIX</Label><Input name="pix_key" defaultValue={profile.pix_key ?? ""} placeholder="CPF, e-mail, telefone ou aleatória" /></div>
                 <div><Label>E-mail</Label><Input value={profile.email} disabled /></div>
