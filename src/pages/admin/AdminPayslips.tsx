@@ -236,9 +236,10 @@ export default function AdminPayslips() {
                     {view.rejection_reason && <p className="mt-2"><strong>Motivo:</strong> {view.rejection_reason}</p>}
                   </div>
                 )}
+                {sigUrl && (
                   <div className="mt-4 pt-4 border-t">
                     <p className="text-xs text-muted-foreground mb-2">
-                      {view.signed_document_path ? "Documento assinado" : "Assinatura do funcionário"} ({new Date(view.signed_at).toLocaleString("pt-BR")}):
+                      {view.signed_document_path ? "Documento assinado" : "Assinatura do funcionário"} ({view.signed_at ? new Date(view.signed_at).toLocaleString("pt-BR") : "—"}):
                     </p>
                     {view.signed_document_path ? (
                       <a href={sigUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline text-sm">
