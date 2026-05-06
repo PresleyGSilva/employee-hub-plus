@@ -461,6 +461,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      notify_admins_payslip_response: {
+        Args: {
+          _agreed: boolean
+          _employee_name: string
+          _payslip_id: string
+          _reason?: string
+        }
+        Returns: undefined
+      }
       notify_today_birthdays: { Args: never; Returns: number }
     }
     Enums: {

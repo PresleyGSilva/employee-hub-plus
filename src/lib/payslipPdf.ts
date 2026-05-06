@@ -52,9 +52,10 @@ async function loadLogoDataUrl() { return loadDataUrl(logoUrl); }
 export interface PayslipPdfData {
   payslip: any;
   employee: { full_name: string; cpf?: string | null; pix_key?: string | null; email: string };
+  employeeSignatureDataUrl?: string | null;
 }
 
-export async function generatePayslipPdf({ payslip, employee }: PayslipPdfData): Promise<jsPDF> {
+export async function generatePayslipPdf({ payslip, employee, employeeSignatureDataUrl }: PayslipPdfData): Promise<jsPDF> {
   const doc = new jsPDF();
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -161,6 +162,12 @@ export async function generatePayslipPdf({ payslip, employee }: PayslipPdfData):
     try {
       const imgW = 70, imgH = 18;
       doc.addImage(empSig, "PNG", margin + (sigW - imgW) / 2, y - imgH, imgW, imgH);
+    } catch {}
+  }
+  if (employeeSignatureDataUrl) {
+    try {
+      const imgW = 70, imgH = 18;
+      doc.addImage(employeeSignatureDataUrl, "PNG", pageW - margin - sigW + (sigW - imgW) / 2, y - imgH, imgW, imgH);
     } catch {}
   }
   doc.line(margin, y, margin + sigW, y);

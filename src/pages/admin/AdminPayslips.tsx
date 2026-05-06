@@ -151,7 +151,22 @@ export default function AdminPayslips() {
                         <Button size="sm" variant="outline" onClick={async () => {
                           const prof = profiles[p.user_id];
                           if (!prof) return;
-                          const doc = await generatePayslipPdf({ payslip: p, employee: prof });
+                          let employeeSignatureDataUrl: string | null = null;
+                          if (p.signature_path) {
+                            const { data } = await supabase.storage.from("payslip-signatures").createSignedUrl(p.signature_path, 120);
+                            if (data?.signedUrl) {
+                              try {
+                                const r = await fetch(data.signedUrl);
+                                const b = await r.blob();
+                                employeeSignatureDataUrl = await new Promise<string>((res) => {
+                                  const fr = new FileReader();
+                                  fr.onloadend = () => res(fr.result as string);
+                                  fr.readAsDataURL(b);
+                                });
+                              } catch {}
+                            }
+                          }
+                          const doc = await generatePayslipPdf({ payslip: p, employee: prof, employeeSignatureDataUrl });
                           doc.save(`holerite-${(prof.full_name||"funcionario").replace(/\s+/g,"_")}-${monthNames[p.reference_month-1]}-${p.reference_year}.pdf`);
                         }}>
                           <Download className="h-3 w-3 mr-1" /> PDF

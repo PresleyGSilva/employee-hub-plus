@@ -102,6 +102,14 @@ export default function Payslips() {
       if (signature_path) { update.signature_path = signature_path; update.signed_at = new Date().toISOString(); }
       const { error } = await supabase.from("payslips").update(update).eq("id", open.id);
       if (error) throw error;
+      // Notifica admins
+      const { data: prof } = await supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle();
+      await supabase.rpc("notify_admins_payslip_response", {
+        _payslip_id: open.id,
+        _employee_name: prof?.full_name ?? user.email ?? "Funcionário",
+        _agreed: agree,
+        _reason: agree ? null : reason.trim(),
+      });
       toast.success(agree ? "Holerite assinado e enviado" : "Resposta registrada");
       setOpen(null); load();
     } catch (e: any) {
