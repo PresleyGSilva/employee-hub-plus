@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fmtBRL } from "@/lib/payroll";
 import { toast } from "sonner";
-import { Pencil, Shield, ShieldOff, FileText, KeyRound, Briefcase, Plus, Trash2 } from "lucide-react";
+import { Pencil, Shield, ShieldOff, FileText, KeyRound, Briefcase, Plus, Trash2, Users, X } from "lucide-react";
 
 export default function Employees() {
   const [list, setList] = useState<any[]>([]);
