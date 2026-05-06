@@ -173,6 +173,35 @@ export default function AdminPayslips() {
                             <span className="cursor-pointer"><Upload className="h-3 w-3 mr-1" /> Assinado</span>
                           </Button>
                         </label>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="destructive">
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Apagar holerite?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Apagar o holerite de {profiles[p.user_id]?.full_name} — {monthNames[p.reference_month-1]}/{p.reference_year}? Esta ação não pode ser desfeita.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={async () => {
+                                if (p.signed_document_path) {
+                                  await supabase.storage.from("payslip-documents").remove([p.signed_document_path]);
+                                }
+                                if (p.signature_path) {
+                                  await supabase.storage.from("payslip-signatures").remove([p.signature_path]);
+                                }
+                                const { error } = await supabase.from("payslips").delete().eq("id", p.id);
+                                if (error) toast.error(error.message);
+                                else { toast.success("Holerite apagado"); load(); }
+                              }}>Apagar</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </TableCell>
                   </TableRow>
