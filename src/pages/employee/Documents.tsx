@@ -6,8 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { FolderOpen, Upload, Trash2, FileText, Camera, Cake } from "lucide-react";
+import { FolderOpen, Upload, Trash2, FileText, Camera, Cake, Search, Loader2, Eye } from "lucide-react";
+import { fetchCnpj, formatCep, formatCnpj } from "@/lib/brasilApi";
+import { generateNfseDataPdf } from "@/lib/nfsePdf";
+import { COMPANY } from "@/lib/company";
+import { fmtBRL } from "@/lib/payroll";
 
 const DOC_CATEGORIES = [
   { key: "rg", label: "RG" },
@@ -23,6 +28,48 @@ export default function Documents() {
   const [docs, setDocs] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
   const [busy, setBusy] = useState(false);
+  const [cnpjValue, setCnpjValue] = useState("");
+  const [cnpjBusy, setCnpjBusy] = useState(false);
+  const [cnpjData, setCnpjData] = useState<any>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  const lookupCnpj = async (raw: string, silent = false) => {
+    const clean = raw.replace(/\D/g, "");
+    if (clean.length !== 14) {
+      if (!silent) toast.error("CNPJ deve ter 14 dígitos");
+      return;
+    }
+    setCnpjBusy(true);
+    const data = await fetchCnpj(clean);
+    setCnpjBusy(false);
+    if (!data) {
+      if (!silent) toast.error("CNPJ não encontrado na Receita");
+      return;
+    }
+    setCnpjData(data);
+    if (!user) return;
+    const opening = data.data_inicio_atividade ? data.data_inicio_atividade.slice(0, 10) : null;
+    const { error } = await supabase.from("profiles").update({
+      cnpj: formatCnpj(clean),
+      company_name: data.razao_social || data.nome_fantasia || null,
+      address: data.logradouro || null,
+      address_number: data.numero || null,
+      neighborhood: data.bairro || null,
+      city: data.municipio || null,
+      state: data.uf || null,
+      zip_code: formatCep(data.cep) || null,
+      opening_date: opening,
+      service_code: profile?.service_code || "17.22.01",
+      service_description: data.cnae_fiscal_descricao || profile?.service_description || null,
+    }).eq("id", user.id);
+    if (error) toast.error(error.message);
+    else { toast.success("Dados do CNPJ preenchidos automaticamente!"); load(); }
+  };
+
+  useEffect(() => {
+    if (profile?.cnpj && !cnpjValue) setCnpjValue(profile.cnpj);
+  }, [profile]);
+
 
   const load = async () => {
     if (!user) return;
@@ -68,6 +115,15 @@ export default function Documents() {
       cpf: f.get("cpf") as string,
       cnpj: f.get("cnpj") as string,
       company_name: (f.get("company_name") as string) || null,
+      address: (f.get("address") as string) || null,
+      address_number: (f.get("address_number") as string) || null,
+      neighborhood: (f.get("neighborhood") as string) || null,
+      city: (f.get("city") as string) || null,
+      state: (f.get("state") as string) || null,
+      zip_code: (f.get("zip_code") as string) || null,
+      municipal_registration: (f.get("municipal_registration") as string) || null,
+      service_code: (f.get("service_code") as string) || null,
+      service_description: (f.get("service_description") as string) || null,
       birth_date: birth,
     }).eq("id", user.id);
     if (error) toast.error(error.message); else { toast.success("Perfil atualizado"); load(); }
@@ -131,13 +187,52 @@ export default function Documents() {
                   <Input name="birth_date" type="date" defaultValue={profile.birth_date ?? ""} />
                 </div>
                 <div><Label>CPF</Label><Input name="cpf" defaultValue={profile.cpf ?? ""} placeholder="000.000.000-00" /></div>
-                <div><Label>CNPJ (caso seja MEI)</Label><Input name="cnpj" defaultValue={profile.cnpj ?? ""} placeholder="00.000.000/0000-00" /></div>
+                <div>
+                  <Label>CNPJ (caso seja MEI)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      name="cnpj"
+                      value={cnpjValue}
+                      onChange={(e) => setCnpjValue(e.target.value)}
+                      onBlur={(e) => {
+                        const clean = e.target.value.replace(/\D/g, "");
+                        if (clean.length === 14 && clean !== (profile.cnpj || "").replace(/\D/g, "")) {
+                          lookupCnpj(clean, true);
+                        }
+                      }}
+                      placeholder="00.000.000/0000-00"
+                    />
+                    <Button type="button" variant="outline" size="icon" disabled={cnpjBusy}
+                      onClick={() => lookupCnpj(cnpjValue)} title="Buscar dados na Receita">
+                      {cnpjBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-1">Preenche endereço e razão social automaticamente</p>
+                </div>
                 <div className="sm:col-span-2"><Label>Razão social do MEI (como aparecerá na NFS-e)</Label><Input name="company_name" defaultValue={profile.company_name ?? ""} placeholder="Ex.: 63.658.468 LARISSA COSTA SANTOS" /></div>
+                {profile.cnpj && (
+                  <>
+                    <div className="sm:col-span-2"><Label>Endereço</Label><Input name="address" defaultValue={profile.address ?? ""} /></div>
+                    <div><Label>Número</Label><Input name="address_number" defaultValue={profile.address_number ?? ""} /></div>
+                    <div><Label>Bairro</Label><Input name="neighborhood" defaultValue={profile.neighborhood ?? ""} /></div>
+                    <div><Label>Cidade</Label><Input name="city" defaultValue={profile.city ?? ""} /></div>
+                    <div><Label>UF</Label><Input name="state" defaultValue={profile.state ?? ""} maxLength={2} /></div>
+                    <div><Label>CEP</Label><Input name="zip_code" defaultValue={profile.zip_code ?? ""} /></div>
+                    <div><Label>Inscrição Municipal</Label><Input name="municipal_registration" defaultValue={profile.municipal_registration ?? ""} placeholder="(opcional)" /></div>
+                    <div><Label>Código de serviço (NFS-e)</Label><Input name="service_code" defaultValue={profile.service_code ?? "17.22.01"} /></div>
+                    <div className="sm:col-span-2"><Label>Descrição da atividade (CNAE)</Label><Input name="service_description" defaultValue={profile.service_description ?? ""} /></div>
+                  </>
+                )}
                 <div><Label>Telefone</Label><Input name="phone" defaultValue={profile.phone ?? ""} /></div>
                 <div><Label>Chave PIX</Label><Input name="pix_key" defaultValue={profile.pix_key ?? ""} placeholder="CPF, e-mail, telefone ou aleatória" /></div>
                 <div><Label>E-mail</Label><Input value={profile.email} disabled /></div>
-                <div className="sm:col-span-2">
+                <div className="sm:col-span-2 flex flex-wrap gap-2">
                   <Button type="submit" className="gradient-primary text-primary-foreground border-0">Salvar alterações</Button>
+                  {profile.cnpj && (
+                    <Button type="button" variant="outline" onClick={() => setPreviewOpen(true)}>
+                      <Eye className="h-4 w-4 mr-2" /> Ver prévia da NFS-e
+                    </Button>
+                  )}
                 </div>
               </form>
             </div>
@@ -194,6 +289,65 @@ export default function Documents() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Prévia da sua NFS-e</DialogTitle></DialogHeader>
+          {profile && (
+            <div className="space-y-4 text-sm">
+              <p className="text-xs text-muted-foreground">
+                Veja como a sua nota será preenchida no portal nfse.gov.br quando o RH gerar o holerite do mês.
+              </p>
+              <div className="rounded-lg border bg-card p-4 space-y-3">
+                <div>
+                  <p className="font-bold text-xs text-muted-foreground mb-1">PRESTADOR (você)</p>
+                  <p><strong>CNPJ:</strong> {profile.cnpj || "—"}</p>
+                  <p><strong>Nome empresarial:</strong> {profile.company_name || profile.full_name}</p>
+                  {profile.municipal_registration && <p><strong>Inscrição Municipal:</strong> {profile.municipal_registration}</p>}
+                  {profile.address && (
+                    <p><strong>Endereço:</strong> {[profile.address, profile.address_number, profile.neighborhood].filter(Boolean).join(", ")}</p>
+                  )}
+                  {profile.city && <p><strong>Município:</strong> {profile.city} - {profile.state}</p>}
+                  {profile.zip_code && <p><strong>CEP:</strong> {profile.zip_code}</p>}
+                </div>
+                <div className="border-t pt-3">
+                  <p className="font-bold text-xs text-muted-foreground mb-1">TOMADOR</p>
+                  <p><strong>CNPJ:</strong> {COMPANY.cnpj}</p>
+                  <p><strong>Razão social:</strong> {COMPANY.name}</p>
+                  <p><strong>Município:</strong> {COMPANY.city} - {COMPANY.state}</p>
+                </div>
+                <div className="border-t pt-3">
+                  <p className="font-bold text-xs text-muted-foreground mb-1">SERVIÇO</p>
+                  <p><strong>Código:</strong> {profile.service_code || "17.22.01"} - {profile.service_description || "Cobrança em geral."}</p>
+                  <p className="mt-2"><strong>Descrição:</strong></p>
+                  <p className="italic text-muted-foreground">
+                    Valor referente aos serviços prestados no mês de MM/AAAA<br/>
+                    Salário {fmtBRL(Number(profile.base_salary || 0))}<br/>
+                    Dados para Recebimento: Chave Pix: {profile.pix_key || "—"}
+                  </p>
+                </div>
+                <div className="border-t pt-3">
+                  <p className="font-bold text-xs text-muted-foreground mb-1">VALOR</p>
+                  <p className="text-lg font-bold text-primary">{fmtBRL(Number(profile.base_salary || 0))}</p>
+                </div>
+              </div>
+              <Button className="w-full gradient-primary text-primary-foreground border-0"
+                onClick={() => {
+                  const now = new Date();
+                  const doc = generateNfseDataPdf({
+                    employee: profile,
+                    month: now.getMonth() + 1,
+                    year: now.getFullYear(),
+                    amount: Number(profile.base_salary || 0),
+                  });
+                  doc.save(`previa-NFSe-${profile.full_name?.replace(/\s+/g, "_")}.pdf`);
+                }}>
+                <FileText className="h-4 w-4 mr-2" /> Baixar PDF de prévia
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

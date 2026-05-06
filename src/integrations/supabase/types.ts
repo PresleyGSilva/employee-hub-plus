@@ -230,9 +230,12 @@ export type Database = {
       profiles: {
         Row: {
           active: boolean
+          address: string | null
+          address_number: string | null
           avatar_url: string | null
           base_salary: number | null
           birth_date: string | null
+          city: string | null
           cnpj: string | null
           company_name: string | null
           cpf: string | null
@@ -244,17 +247,27 @@ export type Database = {
           hire_date: string | null
           id: string
           is_mei: boolean
+          municipal_registration: string | null
+          neighborhood: string | null
+          opening_date: string | null
           overtime_hour_rate: number
           phone: string | null
           pix_key: string | null
           position: string | null
+          service_code: string | null
+          service_description: string | null
+          state: string | null
           updated_at: string
+          zip_code: string | null
         }
         Insert: {
           active?: boolean
+          address?: string | null
+          address_number?: string | null
           avatar_url?: string | null
           base_salary?: number | null
           birth_date?: string | null
+          city?: string | null
           cnpj?: string | null
           company_name?: string | null
           cpf?: string | null
@@ -266,17 +279,27 @@ export type Database = {
           hire_date?: string | null
           id: string
           is_mei?: boolean
+          municipal_registration?: string | null
+          neighborhood?: string | null
+          opening_date?: string | null
           overtime_hour_rate?: number
           phone?: string | null
           pix_key?: string | null
           position?: string | null
+          service_code?: string | null
+          service_description?: string | null
+          state?: string | null
           updated_at?: string
+          zip_code?: string | null
         }
         Update: {
           active?: boolean
+          address?: string | null
+          address_number?: string | null
           avatar_url?: string | null
           base_salary?: number | null
           birth_date?: string | null
+          city?: string | null
           cnpj?: string | null
           company_name?: string | null
           cpf?: string | null
@@ -288,11 +311,18 @@ export type Database = {
           hire_date?: string | null
           id?: string
           is_mei?: boolean
+          municipal_registration?: string | null
+          neighborhood?: string | null
+          opening_date?: string | null
           overtime_hour_rate?: number
           phone?: string | null
           pix_key?: string | null
           position?: string | null
+          service_code?: string | null
+          service_description?: string | null
+          state?: string | null
           updated_at?: string
+          zip_code?: string | null
         }
         Relationships: []
       }
