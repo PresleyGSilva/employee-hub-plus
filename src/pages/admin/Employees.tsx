@@ -130,6 +130,30 @@ export default function Employees() {
     load();
   };
 
+  const createTeamInline = async () => {
+    if (!newTeamName.trim()) return toast.error("Nome da equipe obrigatório");
+    const { data, error } = await supabase.from("teams").insert({
+      name: newTeamName.trim(), color: newTeamColor,
+      supervisor_id: editRole === "supervisor" && editing ? editing.id : null,
+    }).select().single();
+    if (error) return toast.error(error.message);
+    toast.success(`Equipe "${data.name}" criada`);
+    setNewTeamName(""); setNewTeamColor("#3b82f6");
+    await load();
+    setEditTeam(data.id);
+  };
+
+  const assignMemberToTeam = async (userId: string, teamId: string | null) => {
+    await supabase.from("profiles").update({ team_id: teamId }).eq("id", userId);
+    if (teamId && editing) {
+      await supabase.from("notifications").insert([
+        { user_id: editing.id, title: "👥 Nova consultora na sua equipe",
+          message: `Uma consultora foi vinculada à sua equipe.`, is_broadcast: false },
+      ]);
+    }
+    await load();
+  };
+
   const openDocs = async (p: any) => {
     setDocsOpen(p);
     const { data } = await supabase.from("documents").select("*").eq("user_id", p.id).order("uploaded_at", { ascending: false });
