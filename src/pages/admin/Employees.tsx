@@ -15,6 +15,7 @@ import { Pencil, Shield, ShieldOff, FileText, KeyRound, Briefcase, Plus, Trash2 
 export default function Employees() {
   const [list, setList] = useState<any[]>([]);
   const [positions, setPositions] = useState<any[]>([]);
+  const [vacations, setVacations] = useState<Record<string, any>>({});
   const [editing, setEditing] = useState<any>(null);
   const [editPosition, setEditPosition] = useState<string>("");
   const [docsOpen, setDocsOpen] = useState<any>(null);
@@ -28,6 +29,12 @@ export default function Employees() {
     const { data: profiles } = await supabase.from("profiles").select("*").order("full_name");
     const { data: roles } = await supabase.from("user_roles").select("*");
     const { data: pos } = await supabase.from("positions").select("*").order("name");
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: vacs } = await supabase.from("vacations").select("user_id,vacation_start,vacation_end,status")
+      .gte("vacation_end", today).order("vacation_start", { ascending: true });
+    const vmap: Record<string, any> = {};
+    vacs?.forEach((v) => { if (!vmap[v.user_id]) vmap[v.user_id] = v; });
+    setVacations(vmap);
     const merged = (profiles ?? []).map((p) => ({
       ...p, isAdmin: roles?.some((r) => r.user_id === p.id && r.role === "admin"),
     }));
