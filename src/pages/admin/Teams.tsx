@@ -87,12 +87,12 @@ export default function Teams() {
         {teams.map((t) => (
           <Card key={t.id}>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="flex items-center gap-3 text-xl">
                   {getTeamEmblem(t.name) ? (
-                    <img src={getTeamEmblem(t.name)!} alt={`Emblema ${t.name}`} loading="lazy" width={32} height={32} className="h-8 w-8 object-contain" />
+                    <img src={getTeamEmblem(t.name)!} alt={`Emblema ${t.name}`} loading="lazy" width={64} height={64} className="h-16 w-16 object-contain drop-shadow-md" />
                   ) : (
-                    <span className="h-3 w-3 rounded-full" style={{ background: t.color }} />
+                    <span className="h-4 w-4 rounded-full" style={{ background: t.color }} />
                   )}
                   {t.name}
                 </CardTitle>
