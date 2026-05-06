@@ -28,6 +28,7 @@ export default function AdminPayslips() {
     const { data: ps } = await supabase.from("payslips").select("*")
       .eq("reference_month", month).eq("reference_year", year);
     const { data: p } = await supabase.from("profiles").select("*");
+    const map: Record<string, any> = {};
     p?.forEach((x) => (map[x.id] = x));
     setProfiles(map); setList(ps ?? []);
   };
