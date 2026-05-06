@@ -9,8 +9,8 @@
     "build": "electron-builder --win --publish never"
   },
   "devDependencies": {
-    "electron": "^33.0.0",
-    "electron-builder": "^25.1.8"
+    "electron": "22.3.27",
+    "electron-builder": "^24.13.3"
   },
   "build": {
     "appId": "com.tottuscred.desktop",
