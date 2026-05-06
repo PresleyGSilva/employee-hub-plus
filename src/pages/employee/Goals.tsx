@@ -46,8 +46,10 @@ export default function Goals() {
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [user, refMonth, refYear]);
 
+  const supervisedTeam = teams.find((t) => t.supervisor_id === user?.id);
+  const activeTeamId = supervisedTeam?.id ?? myTeamId;
   const myGoals = goals.filter((g) => g.scope === "individual" && g.user_id === user?.id);
-  const myTeamGoals = goals.filter((g) => g.scope === "team" && g.team_id === myTeamId);
+  const myTeamGoals = goals.filter((g) => g.scope === "team" && g.team_id === activeTeamId);
   const companyGoals = goals.filter((g) => g.scope === "company");
 
   const individualRanking = goals
@@ -72,14 +74,14 @@ export default function Goals() {
 
   const myRank = indvList.findIndex((r) => r.user_id === user?.id) + 1;
   const myEntry = indvList.find((r) => r.user_id === user?.id);
-  const myTeamRank = myTeamId ? teamRanking.findIndex((t) => t.id === myTeamId) + 1 : 0;
+  const myTeamRank = activeTeamId ? teamRanking.findIndex((t) => t.id === activeTeamId) + 1 : 0;
 
   const medalIcon = (i: number) => i === 0 ? <Crown className="h-4 w-4 text-warning" /> : i === 1 ? <Medal className="h-4 w-4 text-muted-foreground" /> : i === 2 ? <Medal className="h-4 w-4 text-accent" /> : null;
 
   // Supervisor: members of my team
-  const myTeam = teams.find((t) => t.id === myTeamId);
-  const isSupervisor = role === "supervisor" && myTeam?.supervisor_id === user?.id;
-  const teamMembers = profiles.filter((p) => p.team_id === myTeamId);
+  const myTeam = teams.find((t) => t.id === activeTeamId);
+  const isSupervisor = role === "supervisor" && supervisedTeam?.supervisor_id === user?.id;
+  const teamMembers = profiles.filter((p) => p.team_id === activeTeamId);
 
   const distSum = Object.values(distAlloc).reduce((s, v) => s + (Number(v) || 0), 0);
   const distRemaining = Number(distTotal || 0) - distSum;
@@ -100,7 +102,7 @@ export default function Goals() {
     if (!distTitle.trim()) return toast.error("Informe o título");
     if (!distTotal || distTotal <= 0) return toast.error("Informe a meta total");
     if (Math.abs(distRemaining) > 0.01) return toast.error(`A soma da distribuição (${distSum.toLocaleString("pt-BR")}) deve ser igual à meta total (${Number(distTotal).toLocaleString("pt-BR")})`);
-    if (!myTeamId) return;
+    if (!activeTeamId) return;
     setBusy(true);
 
     // 1) Team goal
@@ -112,7 +114,7 @@ export default function Goals() {
       target_value: Number(distTotal),
       current_value: 0,
       scope: "team",
-      team_id: myTeamId,
+      team_id: activeTeamId,
       created_by: user?.id,
     });
     if (teamErr) { setBusy(false); return toast.error(teamErr.message); }
@@ -212,11 +214,11 @@ export default function Goals() {
         </TabsContent>
 
         <TabsContent value="team" className="space-y-4 mt-4">
-          {!myTeamId && <Card><CardContent className="py-12 text-center text-muted-foreground">Você ainda não está em uma equipe</CardContent></Card>}
-          {myTeamId && (
+          {!activeTeamId && <Card><CardContent className="py-12 text-center text-muted-foreground">Você ainda não está em uma equipe</CardContent></Card>}
+          {activeTeamId && (
             <>
               {(() => {
-                const t = teamRanking.find((x) => x.id === myTeamId);
+                const t = teamRanking.find((x) => x.id === activeTeamId);
                 if (!t) return null;
                 return (
                   <Card>
@@ -229,7 +231,7 @@ export default function Goals() {
                       </div>
                       <div className="space-y-2 pt-2 border-t">
                         <p className="text-xs uppercase text-muted-foreground tracking-wider">Ranking interno</p>
-                        {indvList.filter((r) => r.teamId === myTeamId).map((r, i) => (
+                        {indvList.filter((r) => r.teamId === activeTeamId).map((r, i) => (
                           <div key={r.user_id} className="flex items-center justify-between text-sm">
                             <span className="flex items-center gap-2">
                               {medalIcon(i)}<span className="font-medium">{i + 1}º {r.name}{r.user_id === user?.id && " (você)"}</span>
@@ -314,12 +316,12 @@ export default function Goals() {
             <CardHeader><CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" /> Equipes</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               {teamRanking.map((t, i) => (
-                <div key={t.id} className={`p-3 rounded-lg border ${t.id === myTeamId ? "border-primary/50 bg-primary/5" : ""}`}>
+                  <div key={t.id} className={`p-3 rounded-lg border ${t.id === activeTeamId ? "border-primary/50 bg-primary/5" : ""}`}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-semibold flex items-center gap-2">
                       {medalIcon(i)}<span>{i + 1}º</span>
                       <span className="h-3 w-3 rounded-full" style={{ background: t.color }} />
-                      {t.name} {t.id === myTeamId && <Badge variant="outline">Sua equipe</Badge>}
+                      {t.name} {t.id === activeTeamId && <Badge variant="outline">Sua equipe</Badge>}
                     </span>
                     <span className="font-bold text-primary">{t.pct.toFixed(0)}%</span>
                   </div>
