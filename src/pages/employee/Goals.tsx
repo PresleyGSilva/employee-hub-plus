@@ -5,39 +5,51 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Target, Trophy, Users, Medal, Crown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Target, Trophy, Users, Medal, Crown, Wand2, Plus } from "lucide-react";
 import { monthNames } from "@/lib/payroll";
+import { toast } from "sonner";
 
 export default function Goals() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const now = new Date();
-  const month = now.getMonth() + 1;
-  const year = now.getFullYear();
+  const [refMonth, setRefMonth] = useState(now.getMonth() + 1);
+  const [refYear, setRefYear] = useState(now.getFullYear());
   const [goals, setGoals] = useState<any[]>([]);
   const [teams, setTeams] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [myTeamId, setMyTeamId] = useState<string | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      const [{ data: g }, { data: t }, { data: p }, { data: me }] = await Promise.all([
-        supabase.from("goals").select("*").eq("reference_month", month).eq("reference_year", year),
-        supabase.from("teams").select("*"),
-        supabase.from("profiles").select("id,full_name,team_id,avatar_url").eq("active", true),
-        user ? supabase.from("profiles").select("team_id").eq("id", user.id).maybeSingle() : Promise.resolve({ data: null } as any),
-      ]);
-      setGoals(g ?? []);
-      setTeams(t ?? []);
-      setProfiles(p ?? []);
-      setMyTeamId(me?.team_id ?? null);
-    })();
-  }, [user]);
+  // Supervisor distribution form
+  const [distTitle, setDistTitle] = useState("");
+  const [distDesc, setDistDesc] = useState("");
+  const [distTotal, setDistTotal] = useState<number>(0);
+  const [distAlloc, setDistAlloc] = useState<Record<string, number>>({});
+  const [busy, setBusy] = useState(false);
+
+  const load = async () => {
+    const [{ data: g }, { data: t }, { data: p }, { data: me }] = await Promise.all([
+      supabase.from("goals").select("*").eq("reference_month", refMonth).eq("reference_year", refYear),
+      supabase.from("teams").select("*"),
+      supabase.from("profiles").select("id,full_name,team_id,avatar_url").eq("active", true),
+      user ? supabase.from("profiles").select("team_id").eq("id", user.id).maybeSingle() : Promise.resolve({ data: null } as any),
+    ]);
+    setGoals(g ?? []);
+    setTeams(t ?? []);
+    setProfiles(p ?? []);
+    setMyTeamId(me?.team_id ?? null);
+  };
+
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [user, refMonth, refYear]);
 
   const myGoals = goals.filter((g) => g.scope === "individual" && g.user_id === user?.id);
   const myTeamGoals = goals.filter((g) => g.scope === "team" && g.team_id === myTeamId);
   const companyGoals = goals.filter((g) => g.scope === "company");
 
-  // Individual ranking (all individual goals)
   const individualRanking = goals
     .filter((g) => g.scope === "individual")
     .reduce<Record<string, { user_id: string; current: number; target: number }>>((acc, g) => {
@@ -50,7 +62,6 @@ export default function Goals() {
     .map((r) => ({ ...r, pct: r.target > 0 ? (r.current / r.target) * 100 : 0, name: profiles.find((p) => p.id === r.user_id)?.full_name ?? "—", teamId: profiles.find((p) => p.id === r.user_id)?.team_id }))
     .sort((a, b) => b.pct - a.pct);
 
-  // Team ranking based on aggregated individual goals
   const teamRanking = teams.map((t) => {
     const memberIds = profiles.filter((p) => p.team_id === t.id).map((p) => p.id);
     const tg = goals.filter((g) => g.scope === "individual" && memberIds.includes(g.user_id));
@@ -65,14 +76,88 @@ export default function Goals() {
 
   const medalIcon = (i: number) => i === 0 ? <Crown className="h-4 w-4 text-warning" /> : i === 1 ? <Medal className="h-4 w-4 text-muted-foreground" /> : i === 2 ? <Medal className="h-4 w-4 text-accent" /> : null;
 
+  // Supervisor: members of my team
+  const myTeam = teams.find((t) => t.id === myTeamId);
+  const isSupervisor = role === "supervisor" && myTeam?.supervisor_id === user?.id;
+  const teamMembers = profiles.filter((p) => p.team_id === myTeamId);
+
+  const distSum = Object.values(distAlloc).reduce((s, v) => s + (Number(v) || 0), 0);
+  const distRemaining = Number(distTotal || 0) - distSum;
+
+  const autoDistribute = () => {
+    if (!teamMembers.length || !distTotal) return;
+    const each = Math.floor((Number(distTotal) / teamMembers.length) * 100) / 100;
+    const map: Record<string, number> = {};
+    teamMembers.forEach((m, idx) => {
+      map[m.id] = idx === teamMembers.length - 1
+        ? Math.round((Number(distTotal) - each * (teamMembers.length - 1)) * 100) / 100
+        : each;
+    });
+    setDistAlloc(map);
+  };
+
+  const submitDistribution = async () => {
+    if (!distTitle.trim()) return toast.error("Informe o título");
+    if (!distTotal || distTotal <= 0) return toast.error("Informe a meta total");
+    if (Math.abs(distRemaining) > 0.01) return toast.error(`A soma da distribuição (${distSum.toLocaleString("pt-BR")}) deve ser igual à meta total (${Number(distTotal).toLocaleString("pt-BR")})`);
+    if (!myTeamId) return;
+    setBusy(true);
+
+    // 1) Team goal
+    const { error: teamErr } = await supabase.from("goals").insert({
+      title: distTitle,
+      description: distDesc || null,
+      reference_month: refMonth,
+      reference_year: refYear,
+      target_value: Number(distTotal),
+      current_value: 0,
+      scope: "team",
+      team_id: myTeamId,
+      created_by: user?.id,
+    });
+    if (teamErr) { setBusy(false); return toast.error(teamErr.message); }
+
+    // 2) Individual goals
+    const rows = teamMembers
+      .filter((m) => Number(distAlloc[m.id] || 0) > 0)
+      .map((m) => ({
+        title: distTitle,
+        description: distDesc || null,
+        reference_month: refMonth,
+        reference_year: refYear,
+        target_value: Number(distAlloc[m.id]),
+        current_value: 0,
+        scope: "individual" as const,
+        user_id: m.id,
+        created_by: user?.id,
+      }));
+    if (rows.length) {
+      const { error: indErr } = await supabase.from("goals").insert(rows);
+      if (indErr) { setBusy(false); return toast.error(indErr.message); }
+    }
+
+    setBusy(false);
+    toast.success("Meta da equipe distribuída!");
+    setDistTitle(""); setDistDesc(""); setDistTotal(0); setDistAlloc({});
+    load();
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Metas</h1>
-        <p className="text-muted-foreground">{monthNames[now.getMonth()]}/{year}</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold">Metas</h1>
+          <p className="text-muted-foreground">{monthNames[refMonth - 1]}/{refYear}</p>
+        </div>
+        <div className="flex gap-2">
+          <Select value={String(refMonth)} onValueChange={(v) => setRefMonth(Number(v))}>
+            <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+            <SelectContent>{monthNames.map((n, i) => <SelectItem key={i} value={String(i + 1)}>{n}</SelectItem>)}</SelectContent>
+          </Select>
+          <Input type="number" value={refYear} onChange={(e) => setRefYear(Number(e.target.value))} className="w-24" />
+        </div>
       </div>
 
-      {/* Highlight cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="border-primary/30">
           <CardContent className="p-5">
@@ -86,7 +171,7 @@ export default function Goals() {
           <CardContent className="p-5">
             <p className="text-xs uppercase text-muted-foreground tracking-wider">Sua equipe</p>
             <p className="text-2xl font-bold mt-1">{myTeamRank > 0 ? `${myTeamRank}º lugar` : "Sem equipe"}</p>
-            <p className="text-xs text-muted-foreground">{teams.find((t) => t.id === myTeamId)?.name ?? "—"}</p>
+            <p className="text-xs text-muted-foreground">{myTeam?.name ?? "—"}</p>
           </CardContent>
         </Card>
         <Card>
@@ -99,9 +184,10 @@ export default function Goals() {
       </div>
 
       <Tabs defaultValue="me">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="me"><Target className="h-4 w-4 mr-1" /> Minhas metas</TabsTrigger>
           <TabsTrigger value="team"><Users className="h-4 w-4 mr-1" /> Minha equipe</TabsTrigger>
+          {isSupervisor && <TabsTrigger value="distribute"><Wand2 className="h-4 w-4 mr-1" /> Distribuir meta</TabsTrigger>}
           <TabsTrigger value="ranking"><Trophy className="h-4 w-4 mr-1" /> Ranking</TabsTrigger>
         </TabsList>
 
@@ -129,7 +215,6 @@ export default function Goals() {
           {!myTeamId && <Card><CardContent className="py-12 text-center text-muted-foreground">Você ainda não está em uma equipe</CardContent></Card>}
           {myTeamId && (
             <>
-              {/* Aggregated team progress */}
               {(() => {
                 const t = teamRanking.find((x) => x.id === myTeamId);
                 if (!t) return null;
@@ -172,6 +257,57 @@ export default function Goals() {
             </>
           )}
         </TabsContent>
+
+        {isSupervisor && (
+          <TabsContent value="distribute" className="space-y-4 mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Wand2 className="h-5 w-5" /> Distribuir meta para a equipe {myTeam?.name}</CardTitle>
+                <p className="text-sm text-muted-foreground">Defina a meta total da equipe e quanto cada membro precisa entregar. A soma das partes deve ser igual ao total.</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="sm:col-span-2"><Label>Título</Label><Input value={distTitle} onChange={(e) => setDistTitle(e.target.value)} placeholder="Ex.: Meta de vendas" /></div>
+                  <div className="sm:col-span-2"><Label>Descrição (opcional)</Label><Textarea rows={2} value={distDesc} onChange={(e) => setDistDesc(e.target.value)} /></div>
+                  <div><Label>Meta total da equipe</Label><Input type="number" step="0.01" value={distTotal || ""} onChange={(e) => setDistTotal(Number(e.target.value))} /></div>
+                  <div className="flex items-end"><Button type="button" variant="secondary" onClick={autoDistribute} className="w-full"><Wand2 className="h-4 w-4 mr-1" /> Distribuir igualmente</Button></div>
+                </div>
+
+                <div className="space-y-2 pt-3 border-t">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold">Distribuição por membro ({teamMembers.length})</p>
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">Soma: </span>
+                      <span className="font-bold">{distSum.toLocaleString("pt-BR")}</span>
+                      <span className={`ml-2 font-bold ${Math.abs(distRemaining) < 0.01 ? "text-success" : "text-destructive"}`}>
+                        ({distRemaining >= 0 ? "+" : ""}{distRemaining.toLocaleString("pt-BR")})
+                      </span>
+                    </p>
+                  </div>
+                  {teamMembers.length === 0 && <p className="text-sm text-muted-foreground py-4 text-center">Nenhum membro na equipe ainda.</p>}
+                  {teamMembers.map((m) => {
+                    const v = Number(distAlloc[m.id] || 0);
+                    const pct = distTotal > 0 ? (v / Number(distTotal)) * 100 : 0;
+                    return (
+                      <div key={m.id} className="grid grid-cols-12 gap-2 items-center p-2 rounded-lg border">
+                        <div className="col-span-12 sm:col-span-5 font-medium text-sm">{m.full_name}</div>
+                        <div className="col-span-7 sm:col-span-4">
+                          <Input type="number" step="0.01" value={distAlloc[m.id] ?? ""} placeholder="0,00"
+                            onChange={(e) => setDistAlloc((s) => ({ ...s, [m.id]: Number(e.target.value) }))} />
+                        </div>
+                        <div className="col-span-5 sm:col-span-3 text-right text-sm text-muted-foreground">{pct.toFixed(0)}%</div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <Button onClick={submitDistribution} disabled={busy || !teamMembers.length} className="w-full gradient-primary text-primary-foreground border-0">
+                  <Plus className="h-4 w-4 mr-1" /> Criar meta da equipe e distribuir
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
 
         <TabsContent value="ranking" className="space-y-4 mt-4">
           <Card>
