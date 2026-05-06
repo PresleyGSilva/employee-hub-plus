@@ -24,6 +24,15 @@ export default function AdminGoals() {
   const [targetTeam, setTargetTeam] = useState<string>("");
   const [busy, setBusy] = useState(false);
 
+  // Distribuição da meta da empresa entre equipes
+  const [distTitle, setDistTitle] = useState("");
+  const [distDesc, setDistDesc] = useState("");
+  const [distMonth, setDistMonth] = useState(now.getMonth() + 1);
+  const [distYear, setDistYear] = useState(now.getFullYear());
+  const [distTotal, setDistTotal] = useState<number>(0);
+  const [distAlloc, setDistAlloc] = useState<Record<string, number>>({});
+  const [distBusy, setDistBusy] = useState(false);
+
   const load = async () => {
     const [{ data: g }, { data: t }, { data: p }] = await Promise.all([
       supabase.from("goals").select("*").order("reference_year", { ascending: false }).order("reference_month", { ascending: false }),
