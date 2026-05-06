@@ -206,8 +206,8 @@ export default function Employees() {
         <CardHeader><CardTitle>Lista ({list.length})</CardTitle></CardHeader>
         <CardContent>
           {/* Desktop table */}
-          <div className="hidden lg:block overflow-x-auto">
-            <Table>
+          <div className="hidden xl:block overflow-x-auto">
+            <Table className="text-sm">
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead><TableHead>E-mail</TableHead><TableHead>Cargo</TableHead><TableHead>Equipe</TableHead>
