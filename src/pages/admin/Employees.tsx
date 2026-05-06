@@ -32,23 +32,32 @@ export default function Employees() {
     const { data: profiles } = await supabase.from("profiles").select("*").order("full_name");
     const { data: roles } = await supabase.from("user_roles").select("*");
     const { data: pos } = await supabase.from("positions").select("*").order("name");
+    const { data: tms } = await supabase.from("teams").select("*").order("name");
     const today = new Date().toISOString().slice(0, 10);
     const { data: vacs } = await supabase.from("vacations").select("user_id,vacation_start,vacation_end,status")
       .gte("vacation_end", today).order("vacation_start", { ascending: true });
     const vmap: Record<string, any> = {};
     vacs?.forEach((v) => { if (!vmap[v.user_id]) vmap[v.user_id] = v; });
     setVacations(vmap);
-    const merged = (profiles ?? []).map((p) => ({
-      ...p, isAdmin: roles?.some((r) => r.user_id === p.id && r.role === "admin"),
-    }));
+    const merged = (profiles ?? []).map((p) => {
+      const userRoles = roles?.filter((r) => r.user_id === p.id).map((r) => r.role) ?? [];
+      return {
+        ...p,
+        isAdmin: userRoles.includes("admin"),
+        isSupervisor: userRoles.includes("supervisor"),
+      };
+    });
     setList(merged);
     setPositions(pos ?? []);
+    setTeams(tms ?? []);
   };
   useEffect(() => { load(); }, []);
 
   const openEdit = (p: any) => {
     setEditing(p);
     setEditPosition(p.position ?? "");
+    setEditTeam(p.team_id ?? "");
+    setEditRole(p.isAdmin ? "admin" : p.isSupervisor ? "supervisor" : "employee");
   };
 
   const save = async (e: React.FormEvent<HTMLFormElement>) => {
