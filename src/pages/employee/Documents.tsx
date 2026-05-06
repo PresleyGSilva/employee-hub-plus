@@ -226,8 +226,13 @@ export default function Documents() {
                 <div><Label>Telefone</Label><Input name="phone" defaultValue={profile.phone ?? ""} /></div>
                 <div><Label>Chave PIX</Label><Input name="pix_key" defaultValue={profile.pix_key ?? ""} placeholder="CPF, e-mail, telefone ou aleatória" /></div>
                 <div><Label>E-mail</Label><Input value={profile.email} disabled /></div>
-                <div className="sm:col-span-2">
+                <div className="sm:col-span-2 flex flex-wrap gap-2">
                   <Button type="submit" className="gradient-primary text-primary-foreground border-0">Salvar alterações</Button>
+                  {profile.cnpj && (
+                    <Button type="button" variant="outline" onClick={() => setPreviewOpen(true)}>
+                      <Eye className="h-4 w-4 mr-2" /> Ver prévia da NFS-e
+                    </Button>
+                  )}
                 </div>
               </form>
             </div>
