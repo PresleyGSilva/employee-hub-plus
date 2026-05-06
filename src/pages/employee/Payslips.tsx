@@ -6,10 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { fmtBRL, fmtMinutes, monthNames } from "@/lib/payroll";
-import { toast } from "sonner";
-import { FileText, CheckCircle2, Download, Upload, ShieldCheck } from "lucide-react";
-import { generatePayslipPdf } from "@/lib/payslipPdf";
-import { checkGovBrSignature } from "@/lib/govSignature";
+import { FileText, CheckCircle2 } from "lucide-react";
 
 export default function Payslips() {
   const { user } = useAuth();
