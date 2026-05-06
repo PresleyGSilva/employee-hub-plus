@@ -178,8 +178,42 @@ export default function Documents() {
                   <Input name="birth_date" type="date" defaultValue={profile.birth_date ?? ""} />
                 </div>
                 <div><Label>CPF</Label><Input name="cpf" defaultValue={profile.cpf ?? ""} placeholder="000.000.000-00" /></div>
-                <div><Label>CNPJ (caso seja MEI)</Label><Input name="cnpj" defaultValue={profile.cnpj ?? ""} placeholder="00.000.000/0000-00" /></div>
+                <div>
+                  <Label>CNPJ (caso seja MEI)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      name="cnpj"
+                      value={cnpjValue}
+                      onChange={(e) => setCnpjValue(e.target.value)}
+                      onBlur={(e) => {
+                        const clean = e.target.value.replace(/\D/g, "");
+                        if (clean.length === 14 && clean !== (profile.cnpj || "").replace(/\D/g, "")) {
+                          lookupCnpj(clean, true);
+                        }
+                      }}
+                      placeholder="00.000.000/0000-00"
+                    />
+                    <Button type="button" variant="outline" size="icon" disabled={cnpjBusy}
+                      onClick={() => lookupCnpj(cnpjValue)} title="Buscar dados na Receita">
+                      {cnpjBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-1">Preenche endereço e razão social automaticamente</p>
+                </div>
                 <div className="sm:col-span-2"><Label>Razão social do MEI (como aparecerá na NFS-e)</Label><Input name="company_name" defaultValue={profile.company_name ?? ""} placeholder="Ex.: 63.658.468 LARISSA COSTA SANTOS" /></div>
+                {profile.cnpj && (
+                  <>
+                    <div className="sm:col-span-2"><Label>Endereço</Label><Input name="address" defaultValue={profile.address ?? ""} /></div>
+                    <div><Label>Número</Label><Input name="address_number" defaultValue={profile.address_number ?? ""} /></div>
+                    <div><Label>Bairro</Label><Input name="neighborhood" defaultValue={profile.neighborhood ?? ""} /></div>
+                    <div><Label>Cidade</Label><Input name="city" defaultValue={profile.city ?? ""} /></div>
+                    <div><Label>UF</Label><Input name="state" defaultValue={profile.state ?? ""} maxLength={2} /></div>
+                    <div><Label>CEP</Label><Input name="zip_code" defaultValue={profile.zip_code ?? ""} /></div>
+                    <div><Label>Inscrição Municipal</Label><Input name="municipal_registration" defaultValue={profile.municipal_registration ?? ""} placeholder="(opcional)" /></div>
+                    <div><Label>Código de serviço (NFS-e)</Label><Input name="service_code" defaultValue={profile.service_code ?? "17.22.01"} /></div>
+                    <div className="sm:col-span-2"><Label>Descrição da atividade (CNAE)</Label><Input name="service_description" defaultValue={profile.service_description ?? ""} /></div>
+                  </>
+                )}
                 <div><Label>Telefone</Label><Input name="phone" defaultValue={profile.phone ?? ""} /></div>
                 <div><Label>Chave PIX</Label><Input name="pix_key" defaultValue={profile.pix_key ?? ""} placeholder="CPF, e-mail, telefone ou aleatória" /></div>
                 <div><Label>E-mail</Label><Input value={profile.email} disabled /></div>
