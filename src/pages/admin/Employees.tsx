@@ -27,6 +27,8 @@ export default function Employees() {
   const [newPwd, setNewPwd] = useState("");
   const [posOpen, setPosOpen] = useState(false);
   const [newPosName, setNewPosName] = useState("");
+  const [newTeamName, setNewTeamName] = useState("");
+  const [newTeamColor, setNewTeamColor] = useState("#3b82f6");
 
   const load = async () => {
     const { data: profiles } = await supabase.from("profiles").select("*").order("full_name");
