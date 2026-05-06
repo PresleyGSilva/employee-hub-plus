@@ -245,10 +245,17 @@ export default function AdminPayslips() {
                   <span>Líquido</span><span className="text-primary">{fmtBRL(Number(view.total_net))}</span>
                 </div>
                 {view.status === "rejected" && (
-                  <div className="mt-4 pt-4 border-t rounded-lg bg-destructive/10 p-3 text-sm">
+                  <div className="mt-4 pt-4 border-t rounded-lg bg-destructive/10 p-3 text-sm space-y-2">
                     <p className="font-semibold text-destructive">Funcionário NÃO concordou</p>
                     {view.responded_at && <p className="text-xs text-muted-foreground">em {new Date(view.responded_at).toLocaleString("pt-BR")}</p>}
-                    {view.rejection_reason && <p className="mt-2"><strong>Motivo:</strong> {view.rejection_reason}</p>}
+                    {view.rejection_reason && <p><strong>Motivo:</strong> {view.rejection_reason}</p>}
+                    <ReopenBlock payslip={view} onDone={() => { setView(null); load(); }} />
+                  </div>
+                )}
+                {view.admin_response && view.status !== "rejected" && (
+                  <div className="mt-4 pt-4 border-t rounded-lg bg-primary/10 p-3 text-sm">
+                    <p className="font-semibold">Resposta do RH enviada:</p>
+                    <p className="mt-1">{view.admin_response}</p>
                   </div>
                 )}
                 {sigUrl && (
