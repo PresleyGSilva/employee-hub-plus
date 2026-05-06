@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Trash2, Plus, Users } from "lucide-react";
+import { getTeamEmblem } from "@/lib/teamEmblems";
 
 export default function Teams() {
   const [teams, setTeams] = useState<any[]>([]);
@@ -88,7 +89,11 @@ export default function Teams() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full" style={{ background: t.color }} />
+                  {getTeamEmblem(t.name) ? (
+                    <img src={getTeamEmblem(t.name)!} alt={`Emblema ${t.name}`} loading="lazy" width={32} height={32} className="h-8 w-8 object-contain" />
+                  ) : (
+                    <span className="h-3 w-3 rounded-full" style={{ background: t.color }} />
+                  )}
                   {t.name}
                 </CardTitle>
                 <Button size="icon" variant="ghost" onClick={() => remove(t.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
