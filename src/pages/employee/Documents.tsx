@@ -9,6 +9,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { FolderOpen, Upload, Trash2, FileText, Camera, Cake } from "lucide-react";
 
+const DOC_CATEGORIES = [
+  { key: "rg", label: "RG" },
+  { key: "cpf", label: "CPF" },
+  { key: "comprovante_residencia", label: "Comprovante de Residência" },
+  { key: "titulo_eleitor", label: "Título de Eleitor" },
+  { key: "auxilio_brasil", label: "Comprovante de Auxílio Brasil" },
+] as const;
+
 export default function Documents() {
   const { user } = useAuth();
   const [docs, setDocs] = useState<any[]>([]);
