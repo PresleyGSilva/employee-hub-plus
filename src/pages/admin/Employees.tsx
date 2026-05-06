@@ -86,11 +86,35 @@ export default function Employees() {
       await supabase.from("user_roles").insert({ user_id: editing.id, role: "admin" as any });
     } else if (editRole === "supervisor") {
       await supabase.from("user_roles").insert({ user_id: editing.id, role: "supervisor" as any });
-      // If she's supervisor of a team, mark the team
       if (editTeam) await supabase.from("teams").update({ supervisor_id: editing.id }).eq("id", editTeam);
     }
 
-    toast.success("Atualizado"); setEditing(null); load();
+    // Notify supervisor when a consultora is linked/moved to her team
+    const teamChanged = (editing.team_id ?? "") !== (editTeam ?? "");
+    if (teamChanged && editTeam && editRole === "employee") {
+      const team = teams.find((t) => t.id === editTeam);
+      if (team?.supervisor_id && team.supervisor_id !== editing.id) {
+        await supabase.from("notifications").insert({
+          user_id: team.supervisor_id,
+          title: "👥 Nova consultora na sua equipe",
+          message: `${editing.full_name} foi vinculada à equipe ${team.name}. Acompanhe o progresso dela em Metas.`,
+          is_broadcast: false,
+        });
+        // Also notify the consultora
+        await supabase.from("notifications").insert({
+          user_id: editing.id,
+          title: "🎉 Você foi vinculada a uma equipe",
+          message: `Você agora faz parte da equipe ${team.name}. Bem-vinda!`,
+          is_broadcast: false,
+        });
+        toast.success(`Vinculada e supervisora notificada`);
+      } else {
+        toast.success("Atualizado");
+      }
+    } else {
+      toast.success("Atualizado");
+    }
+    setEditing(null); load();
   };
 
   const toggleAdmin = async (p: any) => {
