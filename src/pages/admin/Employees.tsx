@@ -229,6 +229,29 @@ export default function Employees() {
                   <div><Label>Telefone</Label><Input name="phone" defaultValue={editing.phone ?? ""} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Equipe</Label>
+                    <Select value={editTeam || "none"} onValueChange={(v) => setEditTeam(v === "none" ? "" : v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Sem equipe</SelectItem>
+                        {teams.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Função no sistema</Label>
+                    <Select value={editRole} onValueChange={(v: any) => setEditRole(v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="employee">Consultora</SelectItem>
+                        <SelectItem value="supervisor">Supervisora</SelectItem>
+                        <SelectItem value="admin">Administrador (gerente)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   <div><Label>Chave PIX</Label><Input name="pix_key" defaultValue={editing.pix_key ?? ""} /></div>
                   <div><Label>Salário base (R$)</Label><Input name="base_salary" type="number" step="0.01" defaultValue={editing.base_salary ?? 0} /></div>
                 </div>
