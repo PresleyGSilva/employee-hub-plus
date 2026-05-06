@@ -206,7 +206,7 @@ export default function Employees() {
         <CardHeader><CardTitle>Lista ({list.length})</CardTitle></CardHeader>
         <CardContent>
           {/* Desktop table */}
-          <div className="hidden xl:block overflow-x-auto">
+          <div className="hidden 2xl:block overflow-x-auto">
             <Table className="text-sm">
               <TableHeader>
                 <TableRow>
@@ -227,13 +227,17 @@ export default function Employees() {
                     <TableCell>{p.position ?? "—"}</TableCell>
                     <TableCell className="text-sm">
                       {(() => {
-                        const t = teams.find((x) => x.id === p.team_id);
-                        return t ? (
+                        const supTeam = teams.find((x) => x.supervisor_id === p.id);
+                        const memberTeam = teams.find((x) => x.id === p.team_id);
+                        const t = supTeam || memberTeam;
+                        if (!t) return "—";
+                        return (
                           <span className="inline-flex items-center gap-1">
                             <span className="h-2 w-2 rounded-full" style={{ background: t.color }} />
                             {t.name}
+                            {supTeam && <span className="text-[10px] text-primary ml-1">(supervisora)</span>}
                           </span>
-                        ) : "—";
+                        );
                       })()}
                     </TableCell>
                     <TableCell className="text-sm">{fmtD(p.hire_date)}</TableCell>
@@ -271,10 +275,12 @@ export default function Employees() {
           </div>
 
           {/* Mobile/Tablet cards */}
-          <div className="xl:hidden space-y-3">
+          <div className="2xl:hidden space-y-3">
             {list.map((p) => {
               const v = vacations[p.id];
-              const t = teams.find((x) => x.id === p.team_id);
+              const supTeam = teams.find((x) => x.supervisor_id === p.id);
+              const memberTeam = teams.find((x) => x.id === p.team_id);
+              const t = supTeam || memberTeam;
               const fmtD = (d?: string | null) => d ? new Date(d + "T00:00:00").toLocaleDateString("pt-BR") : "—";
               return (
                 <div key={p.id} className="rounded-lg border p-3 space-y-2 bg-card">
@@ -293,7 +299,7 @@ export default function Employees() {
                     <div><span className="text-muted-foreground">Cargo: </span>{p.position ?? "—"}</div>
                     <div className="flex items-center gap-1">
                       <span className="text-muted-foreground">Equipe: </span>
-                      {t ? (<><span className="h-2 w-2 rounded-full" style={{ background: t.color }} />{t.name}</>) : "—"}
+                      {t ? (<><span className="h-2 w-2 rounded-full" style={{ background: t.color }} />{t.name}{supTeam && <span className="text-[10px] text-primary ml-1">(sup.)</span>}</>) : "—"}
                     </div>
                     <div><span className="text-muted-foreground">Admissão: </span>{fmtD(p.hire_date)}</div>
                     <div><span className="text-muted-foreground">Férias: </span>{v ? `${fmtD(v.vacation_start)}→${fmtD(v.vacation_end)}` : "—"}</div>
