@@ -173,7 +173,7 @@ export default function AdminPayslips() {
                         }}>
                           <Download className="h-3 w-3 mr-1" /> PDF
                         </Button>
-                        {profiles[p.user_id]?.is_mei && (
+                        {(profiles[p.user_id]?.cnpj || profiles[p.user_id]?.is_mei) && (
                           <Button size="sm" variant="outline" onClick={() => {
                             const prof = profiles[p.user_id];
                             const doc = generateNfseDataPdf({
