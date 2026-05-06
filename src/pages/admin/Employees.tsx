@@ -313,6 +313,56 @@ export default function Employees() {
                     </Select>
                   </div>
                 </div>
+
+                {/* Inline: create new team without leaving this dialog */}
+                <div className="rounded-lg border p-3 bg-muted/30 space-y-2">
+                  <Label className="text-xs flex items-center gap-1"><Plus className="h-3 w-3" /> Criar nova equipe</Label>
+                  <div className="flex gap-2">
+                    <Input value={newTeamName} onChange={(e) => setNewTeamName(e.target.value)} placeholder="Ex.: Equipe Azul" className="flex-1" />
+                    <Input type="color" value={newTeamColor} onChange={(e) => setNewTeamColor(e.target.value)} className="w-14 h-10 p-1" />
+                    <Button type="button" onClick={createTeamInline}>Criar</Button>
+                  </div>
+                  {editRole === "supervisor" && (
+                    <p className="text-[11px] text-muted-foreground">A nova equipe terá <strong>{editing.full_name}</strong> como supervisora automaticamente.</p>
+                  )}
+                </div>
+
+                {/* When editing a supervisor with a team, show team members */}
+                {editRole === "supervisor" && editTeam && (() => {
+                  const teamObj = teams.find((t) => t.id === editTeam);
+                  const members = list.filter((p) => p.team_id === editTeam && p.id !== editing.id);
+                  const available = list.filter((p) => !p.team_id && p.id !== editing.id && !p.isAdmin && !p.isSupervisor);
+                  return (
+                    <div className="rounded-lg border p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          Consultoras na equipe {teamObj && <span className="h-2 w-2 rounded-full inline-block ml-1" style={{ background: teamObj.color }} />}
+                          <span className="ml-1">({members.length})</span>
+                        </Label>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {members.map((m) => (
+                          <Badge key={m.id} variant="secondary" className="cursor-pointer gap-1"
+                            onClick={() => assignMemberToTeam(m.id, null)} title="Remover da equipe">
+                            {m.full_name} <X className="h-3 w-3" />
+                          </Badge>
+                        ))}
+                        {members.length === 0 && <span className="text-xs text-muted-foreground">Nenhuma consultora ainda</span>}
+                      </div>
+                      <div className="pt-1">
+                        <Label className="text-xs">Adicionar consultora</Label>
+                        <Select value="" onValueChange={(v) => assignMemberToTeam(v, editTeam)}>
+                          <SelectTrigger><SelectValue placeholder="Selecionar funcionária livre" /></SelectTrigger>
+                          <SelectContent>
+                            {available.length === 0 && <SelectItem value="-" disabled>Sem consultoras disponíveis</SelectItem>}
+                            {available.map((p) => <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  );
+                })()}
                 <div className="grid grid-cols-2 gap-3">
                   <div><Label>Chave PIX</Label><Input name="pix_key" defaultValue={editing.pix_key ?? ""} /></div>
                   <div><Label>Salário base (R$)</Label><Input name="base_salary" type="number" step="0.01" defaultValue={editing.base_salary ?? 0} /></div>
