@@ -211,7 +211,10 @@ export default function Employees() {
                   <div><Label>Bonificação padrão (R$)</Label><Input name="default_bonus" type="number" step="0.01" defaultValue={editing.default_bonus ?? 0} /></div>
                   <div><Label>Comissão padrão (R$)</Label><Input name="default_commission" type="number" step="0.01" defaultValue={editing.default_commission ?? 0} /></div>
                 </div>
-                <div><Label>Valor da hora extra (R$/hora)</Label><Input name="overtime_hour_rate" type="number" step="0.01" defaultValue={editing.overtime_hour_rate ?? 0} /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label>Valor da hora extra (R$/hora)</Label><Input name="overtime_hour_rate" type="number" step="0.01" defaultValue={editing.overtime_hour_rate ?? 0} /></div>
+                  <div><Label>Data de admissão</Label><Input name="hire_date" type="date" defaultValue={editing.hire_date ?? ""} /></div>
+                </div>
                 <label className="flex items-center gap-2 text-sm">
                   <input type="checkbox" name="active" defaultChecked={editing.active} /> Ativo
                 </label>
