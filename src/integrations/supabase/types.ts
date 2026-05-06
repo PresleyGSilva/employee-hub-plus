@@ -149,6 +149,8 @@ export type Database = {
           overtime_pay: number
           reference_month: number
           reference_year: number
+          rejection_reason: string | null
+          responded_at: string | null
           signature_path: string | null
           signed_at: string | null
           signed_document_path: string | null
@@ -169,6 +171,8 @@ export type Database = {
           overtime_pay?: number
           reference_month: number
           reference_year: number
+          rejection_reason?: string | null
+          responded_at?: string | null
           signature_path?: string | null
           signed_at?: string | null
           signed_document_path?: string | null
@@ -189,6 +193,8 @@ export type Database = {
           overtime_pay?: number
           reference_month?: number
           reference_year?: number
+          rejection_reason?: string | null
+          responded_at?: string | null
           signature_path?: string | null
           signed_at?: string | null
           signed_document_path?: string | null
@@ -453,7 +459,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "employee"
-      payslip_status: "pending" | "signed"
+      payslip_status: "pending" | "signed" | "rejected"
       vacation_status:
         | "scheduled"
         | "in_progress"
@@ -589,7 +595,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "employee"],
-      payslip_status: ["pending", "signed"],
+      payslip_status: ["pending", "signed", "rejected"],
       vacation_status: [
         "scheduled",
         "in_progress",
