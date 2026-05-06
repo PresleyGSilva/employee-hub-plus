@@ -15,6 +15,7 @@ import { Pencil, Shield, ShieldOff, FileText, KeyRound, Briefcase, Plus, Trash2 
 export default function Employees() {
   const [list, setList] = useState<any[]>([]);
   const [positions, setPositions] = useState<any[]>([]);
+  const [vacations, setVacations] = useState<Record<string, any>>({});
   const [editing, setEditing] = useState<any>(null);
   const [editPosition, setEditPosition] = useState<string>("");
   const [docsOpen, setDocsOpen] = useState<any>(null);
@@ -28,6 +29,12 @@ export default function Employees() {
     const { data: profiles } = await supabase.from("profiles").select("*").order("full_name");
     const { data: roles } = await supabase.from("user_roles").select("*");
     const { data: pos } = await supabase.from("positions").select("*").order("name");
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: vacs } = await supabase.from("vacations").select("user_id,vacation_start,vacation_end,status")
+      .gte("vacation_end", today).order("vacation_start", { ascending: true });
+    const vmap: Record<string, any> = {};
+    vacs?.forEach((v) => { if (!vmap[v.user_id]) vmap[v.user_id] = v; });
+    setVacations(vmap);
     const merged = (profiles ?? []).map((p) => ({
       ...p, isAdmin: roles?.some((r) => r.user_id === p.id && r.role === "admin"),
     }));
@@ -54,6 +61,7 @@ export default function Employees() {
       default_bonus: Number(f.get("default_bonus")),
       default_commission: Number(f.get("default_commission")),
       overtime_hour_rate: Number(f.get("overtime_hour_rate")),
+      hire_date: (f.get("hire_date") as string) || null,
       active: f.get("active") === "on",
     }).eq("id", editing.id);
     if (error) toast.error(error.message);
@@ -127,16 +135,28 @@ export default function Employees() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead><TableHead>E-mail</TableHead><TableHead>Cargo</TableHead>
+                  <TableHead>Admissão</TableHead><TableHead>Próximas férias</TableHead>
                   <TableHead>Salário base</TableHead><TableHead>Bônus</TableHead><TableHead>Comissão</TableHead><TableHead>Hora extra</TableHead><TableHead>PIX</TableHead><TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {list.map((p) => (
+                {list.map((p) => {
+                  const v = vacations[p.id];
+                  const fmtD = (d?: string | null) => d ? new Date(d + "T00:00:00").toLocaleDateString("pt-BR") : "—";
+                  return (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.full_name || "—"}</TableCell>
                     <TableCell>{p.email}</TableCell>
                     <TableCell>{p.position ?? "—"}</TableCell>
+                    <TableCell className="text-sm">{fmtD(p.hire_date)}</TableCell>
+                    <TableCell className="text-sm">
+                      {v ? (
+                        <span className="whitespace-nowrap">
+                          {fmtD(v.vacation_start)} → {fmtD(v.vacation_end)}
+                        </span>
+                      ) : "—"}
+                    </TableCell>
                     <TableCell>{fmtBRL(Number(p.base_salary ?? 0))}</TableCell>
                     <TableCell>{fmtBRL(Number(p.default_bonus ?? 0))}</TableCell>
                     <TableCell>{fmtBRL(Number(p.default_commission ?? 0))}</TableCell>
@@ -155,8 +175,9 @@ export default function Employees() {
                       <Button size="icon" variant="ghost" onClick={() => openEdit(p)}><Pencil className="h-4 w-4" /></Button>
                     </TableCell>
                   </TableRow>
-                ))}
-                {list.length === 0 && <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Nenhum funcionário cadastrado.</TableCell></TableRow>}
+                  );
+                })}
+                {list.length === 0 && <TableRow><TableCell colSpan={12} className="text-center py-8 text-muted-foreground">Nenhum funcionário cadastrado.</TableCell></TableRow>}
               </TableBody>
             </Table>
           </div>
@@ -190,7 +211,10 @@ export default function Employees() {
                   <div><Label>Bonificação padrão (R$)</Label><Input name="default_bonus" type="number" step="0.01" defaultValue={editing.default_bonus ?? 0} /></div>
                   <div><Label>Comissão padrão (R$)</Label><Input name="default_commission" type="number" step="0.01" defaultValue={editing.default_commission ?? 0} /></div>
                 </div>
-                <div><Label>Valor da hora extra (R$/hora)</Label><Input name="overtime_hour_rate" type="number" step="0.01" defaultValue={editing.overtime_hour_rate ?? 0} /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label>Valor da hora extra (R$/hora)</Label><Input name="overtime_hour_rate" type="number" step="0.01" defaultValue={editing.overtime_hour_rate ?? 0} /></div>
+                  <div><Label>Data de admissão</Label><Input name="hire_date" type="date" defaultValue={editing.hire_date ?? ""} /></div>
+                </div>
                 <label className="flex items-center gap-2 text-sm">
                   <input type="checkbox" name="active" defaultChecked={editing.active} /> Ativo
                 </label>
