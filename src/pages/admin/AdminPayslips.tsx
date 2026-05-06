@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fmtBRL, fmtMinutes, monthNames, OVERTIME_MULTIPLIER, WORK_HOURS_PER_DAY, WORKING_DAYS_PER_MONTH } from "@/lib/payroll";
 import { toast } from "sonner";
-import { Sparkles, CheckCircle2, Download, Upload } from "lucide-react";
+import { Sparkles, CheckCircle2, Download, Upload, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { generatePayslipPdf } from "@/lib/payslipPdf";
 
