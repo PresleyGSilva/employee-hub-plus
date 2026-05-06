@@ -289,6 +289,65 @@ export default function Documents() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Prévia da sua NFS-e</DialogTitle></DialogHeader>
+          {profile && (
+            <div className="space-y-4 text-sm">
+              <p className="text-xs text-muted-foreground">
+                Veja como a sua nota será preenchida no portal nfse.gov.br quando o RH gerar o holerite do mês.
+              </p>
+              <div className="rounded-lg border bg-card p-4 space-y-3">
+                <div>
+                  <p className="font-bold text-xs text-muted-foreground mb-1">PRESTADOR (você)</p>
+                  <p><strong>CNPJ:</strong> {profile.cnpj || "—"}</p>
+                  <p><strong>Nome empresarial:</strong> {profile.company_name || profile.full_name}</p>
+                  {profile.municipal_registration && <p><strong>Inscrição Municipal:</strong> {profile.municipal_registration}</p>}
+                  {profile.address && (
+                    <p><strong>Endereço:</strong> {[profile.address, profile.address_number, profile.neighborhood].filter(Boolean).join(", ")}</p>
+                  )}
+                  {profile.city && <p><strong>Município:</strong> {profile.city} - {profile.state}</p>}
+                  {profile.zip_code && <p><strong>CEP:</strong> {profile.zip_code}</p>}
+                </div>
+                <div className="border-t pt-3">
+                  <p className="font-bold text-xs text-muted-foreground mb-1">TOMADOR</p>
+                  <p><strong>CNPJ:</strong> {COMPANY.cnpj}</p>
+                  <p><strong>Razão social:</strong> {COMPANY.name}</p>
+                  <p><strong>Município:</strong> {COMPANY.city} - {COMPANY.state}</p>
+                </div>
+                <div className="border-t pt-3">
+                  <p className="font-bold text-xs text-muted-foreground mb-1">SERVIÇO</p>
+                  <p><strong>Código:</strong> {profile.service_code || "17.22.01"} - {profile.service_description || "Cobrança em geral."}</p>
+                  <p className="mt-2"><strong>Descrição:</strong></p>
+                  <p className="italic text-muted-foreground">
+                    Valor referente aos serviços prestados no mês de MM/AAAA<br/>
+                    Salário {fmtBRL(Number(profile.base_salary || 0))}<br/>
+                    Dados para Recebimento: Chave Pix: {profile.pix_key || "—"}
+                  </p>
+                </div>
+                <div className="border-t pt-3">
+                  <p className="font-bold text-xs text-muted-foreground mb-1">VALOR</p>
+                  <p className="text-lg font-bold text-primary">{fmtBRL(Number(profile.base_salary || 0))}</p>
+                </div>
+              </div>
+              <Button className="w-full gradient-primary text-primary-foreground border-0"
+                onClick={() => {
+                  const now = new Date();
+                  const doc = generateNfseDataPdf({
+                    employee: profile,
+                    month: now.getMonth() + 1,
+                    year: now.getFullYear(),
+                    amount: Number(profile.base_salary || 0),
+                  });
+                  doc.save(`previa-NFSe-${profile.full_name?.replace(/\s+/g, "_")}.pdf`);
+                }}>
+                <FileText className="h-4 w-4 mr-2" /> Baixar PDF de prévia
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
