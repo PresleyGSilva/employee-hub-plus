@@ -9,10 +9,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fmtBRL, fmtMinutes, monthNames, OVERTIME_MULTIPLIER, WORK_HOURS_PER_DAY, WORKING_DAYS_PER_MONTH } from "@/lib/payroll";
 import { toast } from "sonner";
-import { Sparkles, CheckCircle2, Download, Upload, Trash2 } from "lucide-react";
+import { Sparkles, CheckCircle2, Download, Upload, Trash2, FileText } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { generatePayslipPdf } from "@/lib/payslipPdf";
+import { generateNfseDataPdf } from "@/lib/nfsePdf";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function AdminPayslips() {
@@ -172,6 +173,20 @@ export default function AdminPayslips() {
                         }}>
                           <Download className="h-3 w-3 mr-1" /> PDF
                         </Button>
+                        {profiles[p.user_id]?.is_mei && (
+                          <Button size="sm" variant="outline" onClick={() => {
+                            const prof = profiles[p.user_id];
+                            const doc = generateNfseDataPdf({
+                              employee: prof,
+                              month: p.reference_month,
+                              year: p.reference_year,
+                              amount: Number(prof.base_salary ?? 0),
+                            });
+                            doc.save(`NFSe-dados-${(prof.full_name||"mei").replace(/\s+/g,"_")}-${monthNames[p.reference_month-1]}-${p.reference_year}.pdf`);
+                          }} title="Gerar dados para NFS-e (MEI)">
+                            <FileText className="h-3 w-3 mr-1" /> NFS-e
+                          </Button>
+                        )}
                         <label>
                           <input type="file" accept="application/pdf,.pdf" className="hidden"
                             onChange={async (e) => {

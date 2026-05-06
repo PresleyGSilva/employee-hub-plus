@@ -63,6 +63,7 @@ export default function Employees() {
       overtime_hour_rate: Number(f.get("overtime_hour_rate")),
       hire_date: (f.get("hire_date") as string) || null,
       active: f.get("active") === "on",
+      is_mei: f.get("is_mei") === "on",
     }).eq("id", editing.id);
     if (error) toast.error(error.message);
     else { toast.success("Atualizado"); setEditing(null); load(); }
@@ -215,9 +216,14 @@ export default function Employees() {
                   <div><Label>Valor da hora extra (R$/hora)</Label><Input name="overtime_hour_rate" type="number" step="0.01" defaultValue={editing.overtime_hour_rate ?? 0} /></div>
                   <div><Label>Data de admissão</Label><Input name="hire_date" type="date" defaultValue={editing.hire_date ?? ""} /></div>
                 </div>
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" name="active" defaultChecked={editing.active} /> Ativo
-                </label>
+                <div className="flex items-center gap-6">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="active" defaultChecked={editing.active} /> Ativo
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="is_mei" defaultChecked={editing.is_mei} /> MEI (emite NFS-e)
+                  </label>
+                </div>
                 <Button type="submit" className="w-full gradient-primary text-primary-foreground border-0">Salvar</Button>
               </form>
             </>

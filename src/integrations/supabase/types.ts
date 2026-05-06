@@ -242,6 +242,7 @@ export type Database = {
           full_name: string
           hire_date: string | null
           id: string
+          is_mei: boolean
           overtime_hour_rate: number
           phone: string | null
           pix_key: string | null
@@ -262,6 +263,7 @@ export type Database = {
           full_name?: string
           hire_date?: string | null
           id: string
+          is_mei?: boolean
           overtime_hour_rate?: number
           phone?: string | null
           pix_key?: string | null
@@ -282,6 +284,7 @@ export type Database = {
           full_name?: string
           hire_date?: string | null
           id?: string
+          is_mei?: boolean
           overtime_hour_rate?: number
           phone?: string | null
           pix_key?: string | null
