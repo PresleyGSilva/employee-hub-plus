@@ -145,14 +145,8 @@ export default function Documents() {
           <CardTitle className="flex items-center gap-2"><FolderOpen className="h-5 w-5" /> Documentos enviados</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="file" className="cursor-pointer">
-              <div className="border-2 border-dashed rounded-xl p-6 text-center hover:border-primary transition-smooth">
-                <Upload className="h-7 w-7 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm font-medium">{busy ? "Enviando..." : "Clique para enviar (PDF, imagens, até 10MB)"}</p>
-              </div>
-            </Label>
           <div className="grid gap-3 sm:grid-cols-2">
+
             {DOC_CATEGORIES.map((cat) => {
               const items = docs.filter((d) => d.doc_type === cat.key);
               const inputId = `file-${cat.key}`;
