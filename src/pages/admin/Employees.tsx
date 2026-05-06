@@ -271,7 +271,7 @@ export default function Employees() {
           </div>
 
           {/* Mobile/Tablet cards */}
-          <div className="xl:hidden space-y-3">
+          <div className="2xl:hidden space-y-3">
             {list.map((p) => {
               const v = vacations[p.id];
               const t = teams.find((x) => x.id === p.team_id);
