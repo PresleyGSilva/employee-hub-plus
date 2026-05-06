@@ -175,8 +175,9 @@ export default function Employees() {
                       <Button size="icon" variant="ghost" onClick={() => openEdit(p)}><Pencil className="h-4 w-4" /></Button>
                     </TableCell>
                   </TableRow>
-                ))}
-                {list.length === 0 && <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Nenhum funcionário cadastrado.</TableCell></TableRow>}
+                  );
+                })}
+                {list.length === 0 && <TableRow><TableCell colSpan={12} className="text-center py-8 text-muted-foreground">Nenhum funcionário cadastrado.</TableCell></TableRow>}
               </TableBody>
             </Table>
           </div>
