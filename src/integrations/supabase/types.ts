@@ -237,6 +237,7 @@ export type Database = {
           default_commission: number
           email: string
           full_name: string
+          hire_date: string | null
           id: string
           overtime_hour_rate: number
           phone: string | null
@@ -256,6 +257,7 @@ export type Database = {
           default_commission?: number
           email: string
           full_name?: string
+          hire_date?: string | null
           id: string
           overtime_hour_rate?: number
           phone?: string | null
@@ -275,6 +277,7 @@ export type Database = {
           default_commission?: number
           email?: string
           full_name?: string
+          hire_date?: string | null
           id?: string
           overtime_hour_rate?: number
           phone?: string | null
