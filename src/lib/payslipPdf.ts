@@ -164,6 +164,12 @@ export async function generatePayslipPdf({ payslip, employee, employeeSignatureD
       doc.addImage(empSig, "PNG", margin + (sigW - imgW) / 2, y - imgH, imgW, imgH);
     } catch {}
   }
+  if (employeeSignatureDataUrl) {
+    try {
+      const imgW = 70, imgH = 18;
+      doc.addImage(employeeSignatureDataUrl, "PNG", pageW - margin - sigW + (sigW - imgW) / 2, y - imgH, imgW, imgH);
+    } catch {}
+  }
   doc.line(margin, y, margin + sigW, y);
   doc.line(pageW - margin - sigW, y, pageW - margin, y);
   y += 5;
