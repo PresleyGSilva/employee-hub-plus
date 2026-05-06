@@ -15,9 +15,12 @@ import { Pencil, Shield, ShieldOff, FileText, KeyRound, Briefcase, Plus, Trash2 
 export default function Employees() {
   const [list, setList] = useState<any[]>([]);
   const [positions, setPositions] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
   const [vacations, setVacations] = useState<Record<string, any>>({});
   const [editing, setEditing] = useState<any>(null);
   const [editPosition, setEditPosition] = useState<string>("");
+  const [editTeam, setEditTeam] = useState<string>("");
+  const [editRole, setEditRole] = useState<"employee" | "supervisor" | "admin">("employee");
   const [docsOpen, setDocsOpen] = useState<any>(null);
   const [docs, setDocs] = useState<any[]>([]);
   const [pwdOpen, setPwdOpen] = useState<any>(null);
@@ -29,23 +32,32 @@ export default function Employees() {
     const { data: profiles } = await supabase.from("profiles").select("*").order("full_name");
     const { data: roles } = await supabase.from("user_roles").select("*");
     const { data: pos } = await supabase.from("positions").select("*").order("name");
+    const { data: tms } = await supabase.from("teams").select("*").order("name");
     const today = new Date().toISOString().slice(0, 10);
     const { data: vacs } = await supabase.from("vacations").select("user_id,vacation_start,vacation_end,status")
       .gte("vacation_end", today).order("vacation_start", { ascending: true });
     const vmap: Record<string, any> = {};
     vacs?.forEach((v) => { if (!vmap[v.user_id]) vmap[v.user_id] = v; });
     setVacations(vmap);
-    const merged = (profiles ?? []).map((p) => ({
-      ...p, isAdmin: roles?.some((r) => r.user_id === p.id && r.role === "admin"),
-    }));
+    const merged = (profiles ?? []).map((p) => {
+      const userRoles = roles?.filter((r) => r.user_id === p.id).map((r) => r.role) ?? [];
+      return {
+        ...p,
+        isAdmin: userRoles.includes("admin"),
+        isSupervisor: userRoles.includes("supervisor"),
+      };
+    });
     setList(merged);
     setPositions(pos ?? []);
+    setTeams(tms ?? []);
   };
   useEffect(() => { load(); }, []);
 
   const openEdit = (p: any) => {
     setEditing(p);
     setEditPosition(p.position ?? "");
+    setEditTeam(p.team_id ?? "");
+    setEditRole(p.isAdmin ? "admin" : p.isSupervisor ? "supervisor" : "employee");
   };
 
   const save = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -57,6 +69,7 @@ export default function Employees() {
       pix_key: f.get("pix_key") as string,
       phone: f.get("phone") as string,
       position: editPosition || null,
+      team_id: editTeam || null,
       base_salary: Number(f.get("base_salary")),
       default_bonus: Number(f.get("default_bonus")),
       default_commission: Number(f.get("default_commission")),
@@ -65,8 +78,19 @@ export default function Employees() {
       active: f.get("active") === "on",
       is_mei: f.get("is_mei") === "on",
     }).eq("id", editing.id);
-    if (error) toast.error(error.message);
-    else { toast.success("Atualizado"); setEditing(null); load(); }
+    if (error) { toast.error(error.message); return; }
+
+    // Sync roles: keep only the selected one (admin/supervisor/employee)
+    await supabase.from("user_roles").delete().eq("user_id", editing.id).in("role", ["admin", "supervisor"] as any);
+    if (editRole === "admin") {
+      await supabase.from("user_roles").insert({ user_id: editing.id, role: "admin" as any });
+    } else if (editRole === "supervisor") {
+      await supabase.from("user_roles").insert({ user_id: editing.id, role: "supervisor" as any });
+      // If she's supervisor of a team, mark the team
+      if (editTeam) await supabase.from("teams").update({ supervisor_id: editing.id }).eq("id", editTeam);
+    }
+
+    toast.success("Atualizado"); setEditing(null); load();
   };
 
   const toggleAdmin = async (p: any) => {
@@ -135,7 +159,7 @@ export default function Employees() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nome</TableHead><TableHead>E-mail</TableHead><TableHead>Cargo</TableHead>
+                  <TableHead>Nome</TableHead><TableHead>E-mail</TableHead><TableHead>Cargo</TableHead><TableHead>Equipe</TableHead>
                   <TableHead>Admissão</TableHead><TableHead>Próximas férias</TableHead>
                   <TableHead>Salário base</TableHead><TableHead>Bônus</TableHead><TableHead>Comissão</TableHead><TableHead>Hora extra</TableHead><TableHead>PIX</TableHead><TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
@@ -150,6 +174,17 @@ export default function Employees() {
                     <TableCell className="font-medium">{p.full_name || "—"}</TableCell>
                     <TableCell>{p.email}</TableCell>
                     <TableCell>{p.position ?? "—"}</TableCell>
+                    <TableCell className="text-sm">
+                      {(() => {
+                        const t = teams.find((x) => x.id === p.team_id);
+                        return t ? (
+                          <span className="inline-flex items-center gap-1">
+                            <span className="h-2 w-2 rounded-full" style={{ background: t.color }} />
+                            {t.name}
+                          </span>
+                        ) : "—";
+                      })()}
+                    </TableCell>
                     <TableCell className="text-sm">{fmtD(p.hire_date)}</TableCell>
                     <TableCell className="text-sm">
                       {v ? (
@@ -165,6 +200,7 @@ export default function Employees() {
                     <TableCell className="font-mono text-xs">{p.pix_key ?? "—"}</TableCell>
                     <TableCell>
                       {p.isAdmin && <Badge className="mr-1 bg-accent text-accent-foreground">Admin</Badge>}
+                      {p.isSupervisor && !p.isAdmin && <Badge className="mr-1 bg-primary/20 text-primary">Supervisora</Badge>}
                       {p.active ? <Badge variant="outline" className="border-success text-success">Ativo</Badge> : <Badge variant="destructive">Inativo</Badge>}
                     </TableCell>
                     <TableCell className="text-right space-x-1">
@@ -203,6 +239,29 @@ export default function Employees() {
                     </Select>
                   </div>
                   <div><Label>Telefone</Label><Input name="phone" defaultValue={editing.phone ?? ""} /></div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Equipe</Label>
+                    <Select value={editTeam || "none"} onValueChange={(v) => setEditTeam(v === "none" ? "" : v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Sem equipe</SelectItem>
+                        {teams.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Função no sistema</Label>
+                    <Select value={editRole} onValueChange={(v: any) => setEditRole(v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="employee">Consultora</SelectItem>
+                        <SelectItem value="supervisor">Supervisora</SelectItem>
+                        <SelectItem value="admin">Administrador (gerente)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><Label>Chave PIX</Label><Input name="pix_key" defaultValue={editing.pix_key ?? ""} /></div>
