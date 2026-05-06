@@ -299,7 +299,7 @@ export default function Employees() {
                     <div><span className="text-muted-foreground">Cargo: </span>{p.position ?? "—"}</div>
                     <div className="flex items-center gap-1">
                       <span className="text-muted-foreground">Equipe: </span>
-                      {t ? (<><span className="h-2 w-2 rounded-full" style={{ background: t.color }} />{t.name}</>) : "—"}
+                      {t ? (<><span className="h-2 w-2 rounded-full" style={{ background: t.color }} />{t.name}{supTeam && <span className="text-[10px] text-primary ml-1">(sup.)</span>}</>) : "—"}
                     </div>
                     <div><span className="text-muted-foreground">Admissão: </span>{fmtD(p.hire_date)}</div>
                     <div><span className="text-muted-foreground">Férias: </span>{v ? `${fmtD(v.vacation_start)}→${fmtD(v.vacation_end)}` : "—"}</div>
