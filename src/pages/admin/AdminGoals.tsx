@@ -195,6 +195,64 @@ export default function AdminGoals() {
         </Card>
       )}
 
+      {role === "admin" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Wand2 className="h-5 w-5" /> Distribuir meta da empresa entre as equipes</CardTitle>
+            <p className="text-sm text-muted-foreground">Defina a meta total da empresa e quanto cada equipe precisa entregar. A soma deve ser igual ao total.</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="sm:col-span-2"><Label>Título</Label><Input value={distTitle} onChange={(e) => setDistTitle(e.target.value)} placeholder="Ex.: Meta de vendas" /></div>
+              <div className="sm:col-span-2"><Label>Descrição (opcional)</Label><Textarea rows={2} value={distDesc} onChange={(e) => setDistDesc(e.target.value)} /></div>
+              <div><Label>Mês</Label>
+                <Select value={String(distMonth)} onValueChange={(v) => setDistMonth(Number(v))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{monthNames.map((n, i) => <SelectItem key={i} value={String(i + 1)}>{n}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label>Ano</Label><Input type="number" value={distYear} onChange={(e) => setDistYear(Number(e.target.value))} /></div>
+              <div><Label>Meta total da empresa</Label><Input type="number" step="0.01" value={distTotal || ""} onChange={(e) => setDistTotal(Number(e.target.value))} /></div>
+              <div className="flex items-end"><Button type="button" variant="secondary" onClick={autoDistribute} className="w-full"><Wand2 className="h-4 w-4 mr-1" /> Distribuir igualmente</Button></div>
+            </div>
+
+            <div className="space-y-2 pt-3 border-t">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold">Distribuição por equipe ({teams.length})</p>
+                <p className="text-sm">
+                  <span className="text-muted-foreground">Soma: </span>
+                  <span className="font-bold">{distSum.toLocaleString("pt-BR")}</span>
+                  <span className={`ml-2 font-bold ${Math.abs(distRemaining) < 0.01 ? "text-success" : "text-destructive"}`}>
+                    ({distRemaining >= 0 ? "+" : ""}{distRemaining.toLocaleString("pt-BR")})
+                  </span>
+                </p>
+              </div>
+              {teams.length === 0 && <p className="text-sm text-muted-foreground py-4 text-center">Nenhuma equipe cadastrada.</p>}
+              {teams.map((t) => {
+                const v = Number(distAlloc[t.id] || 0);
+                const pct = distTotal > 0 ? (v / Number(distTotal)) * 100 : 0;
+                return (
+                  <div key={t.id} className="grid grid-cols-12 gap-2 items-center p-2 rounded-lg border">
+                    <div className="col-span-12 sm:col-span-5 font-medium text-sm flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-full" style={{ background: t.color }} />{t.name}
+                    </div>
+                    <div className="col-span-7 sm:col-span-4">
+                      <Input type="number" step="0.01" value={distAlloc[t.id] ?? ""} placeholder="0,00"
+                        onChange={(e) => setDistAlloc((s) => ({ ...s, [t.id]: Number(e.target.value) }))} />
+                    </div>
+                    <div className="col-span-5 sm:col-span-3 text-right text-sm font-semibold text-primary">{pct.toFixed(1)}%</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <Button onClick={submitDistribution} disabled={distBusy || !teams.length} className="w-full gradient-primary text-primary-foreground border-0">
+              <Plus className="h-4 w-4 mr-1" /> Criar meta da empresa e distribuir
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Team aggregate panels */}
       {teams.length > 0 && (
         <Card>
