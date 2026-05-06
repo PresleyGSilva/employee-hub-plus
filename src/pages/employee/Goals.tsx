@@ -263,6 +263,35 @@ export default function Goals() {
 
         {isSupervisor && (
           <TabsContent value="distribute" className="space-y-4 mt-4">
+            {(companyGoals.length > 0 || myTeamGoals.length > 0) && (
+              <Card className="border-primary/30">
+                <CardHeader><CardTitle className="text-base">📥 Metas recebidas para distribuir</CardTitle></CardHeader>
+                <CardContent className="space-y-2">
+                  {companyGoals.map((g) => (
+                    <div key={g.id} className="flex items-center justify-between p-2 rounded border">
+                      <div>
+                        <p className="text-sm font-semibold">🏢 {g.title} <span className="text-xs text-muted-foreground">(empresa)</span></p>
+                        <p className="text-xs text-muted-foreground">Meta total: {Number(g.target_value).toLocaleString("pt-BR")}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {myTeamGoals.map((g) => (
+                    <div key={g.id} className="flex items-center justify-between p-2 rounded border">
+                      <div>
+                        <p className="text-sm font-semibold">👥 {g.title} <span className="text-xs text-muted-foreground">(sua equipe)</span></p>
+                        <p className="text-xs text-muted-foreground">Sua parte: {Number(g.target_value).toLocaleString("pt-BR")}</p>
+                      </div>
+                      <Button size="sm" variant="secondary" onClick={() => { setDistTitle(g.title); setDistDesc(g.description || ""); setDistTotal(Number(g.target_value)); }}>
+                        Usar esta meta
+                      </Button>
+                    </div>
+                  ))}
+                  {companyGoals.length === 0 && myTeamGoals.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-3">Nenhuma meta recebida ainda. Aguarde o administrador distribuir.</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Wand2 className="h-5 w-5" /> Distribuir meta para a equipe {myTeam?.name}</CardTitle>
@@ -298,7 +327,7 @@ export default function Goals() {
                           <Input type="number" step="0.01" value={distAlloc[m.id] ?? ""} placeholder="0,00"
                             onChange={(e) => setDistAlloc((s) => ({ ...s, [m.id]: Number(e.target.value) }))} />
                         </div>
-                        <div className="col-span-5 sm:col-span-3 text-right text-sm text-muted-foreground">{pct.toFixed(0)}%</div>
+                        <div className="col-span-5 sm:col-span-3 text-right text-sm font-semibold text-primary">{pct.toFixed(1)}%</div>
                       </div>
                     );
                   })}
