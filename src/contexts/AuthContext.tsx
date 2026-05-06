@@ -44,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) console.error("[Auth] fetchRole error:", error);
     console.log("[Auth] roles for", uid, data);
     if (data?.some((r) => r.role === "admin")) setRole("admin");
+    else if (data?.some((r) => r.role === "supervisor")) setRole("supervisor");
     else setRole("employee");
     setLoading(false);
   }
