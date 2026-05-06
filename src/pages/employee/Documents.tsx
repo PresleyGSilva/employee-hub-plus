@@ -152,26 +152,46 @@ export default function Documents() {
                 <p className="text-sm font-medium">{busy ? "Enviando..." : "Clique para enviar (PDF, imagens, até 10MB)"}</p>
               </div>
             </Label>
-            <input id="file" type="file" className="hidden" onChange={onUpload} disabled={busy}
-              accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx" />
-          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {DOC_CATEGORIES.map((cat) => {
+              const items = docs.filter((d) => d.doc_type === cat.key);
+              const inputId = `file-${cat.key}`;
+              return (
+                <div key={cat.key} className="rounded-xl border p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-semibold text-sm">{cat.label}</p>
+                    <span className="text-xs text-muted-foreground">{items.length} arquivo(s)</span>
+                  </div>
+                  <Label htmlFor={inputId} className="cursor-pointer block">
+                    <div className="border-2 border-dashed rounded-lg p-4 text-center hover:border-primary transition-smooth">
+                      <Upload className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
+                      <p className="text-xs">{busy ? "Enviando..." : "Clique para enviar"}</p>
+                    </div>
+                  </Label>
+                  <input id={inputId} type="file" className="hidden" disabled={busy}
+                    accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx"
+                    onChange={(e) => onUpload(cat.key, cat.label, e)} />
 
-          <div className="space-y-2">
-            {docs.map((d) => (
-              <div key={d.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
-                <div className="flex items-center gap-3 min-w-0">
-                  <FileText className="h-5 w-5 text-primary shrink-0" />
-                  <div className="min-w-0">
-                    <p className="font-medium truncate">{d.name}</p>
-                    <p className="text-xs text-muted-foreground">{new Date(d.uploaded_at).toLocaleString("pt-BR")}</p>
+                  <div className="space-y-1.5">
+                    {items.map((d) => (
+                      <div key={d.id} className="flex items-center justify-between p-2 rounded-md border bg-card">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <FileText className="h-4 w-4 text-primary shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium truncate">{d.name.replace(`${cat.label} — `, "")}</p>
+                            <p className="text-[10px] text-muted-foreground">{new Date(d.uploaded_at).toLocaleDateString("pt-BR")}</p>
+                          </div>
+                        </div>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => remove(d)}>
+                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                        </Button>
+                      </div>
+                    ))}
+                    {items.length === 0 && <p className="text-center text-[11px] text-muted-foreground py-2">Nenhum arquivo</p>}
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => remove(d)}>
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              </div>
-            ))}
-            {docs.length === 0 && <p className="text-center text-sm text-muted-foreground py-6">Nenhum documento enviado.</p>}
+              );
+            })}
           </div>
         </CardContent>
       </Card>
