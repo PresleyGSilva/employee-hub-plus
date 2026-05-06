@@ -81,6 +81,7 @@ export default function Goals() {
   // Supervisor: members of my team
   const myTeam = teams.find((t) => t.id === activeTeamId);
   const isSupervisor = role === "supervisor";
+  const isEmployee = role === "employee";
   const teamMembers = profiles.filter((p) => p.team_id === activeTeamId);
 
   const distSum = Object.values(distAlloc).reduce((s, v) => s + (Number(v) || 0), 0);
@@ -190,7 +191,7 @@ export default function Goals() {
           <TabsTrigger value="me"><Target className="h-4 w-4 mr-1" /> Minhas metas</TabsTrigger>
           <TabsTrigger value="team"><Users className="h-4 w-4 mr-1" /> Minha equipe</TabsTrigger>
           {isSupervisor && <TabsTrigger value="distribute"><Wand2 className="h-4 w-4 mr-1" /> Distribuir meta</TabsTrigger>}
-          <TabsTrigger value="ranking"><Trophy className="h-4 w-4 mr-1" /> Ranking</TabsTrigger>
+          {!isEmployee && <TabsTrigger value="ranking"><Trophy className="h-4 w-4 mr-1" /> Ranking</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="me" className="space-y-4 mt-4">
