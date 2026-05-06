@@ -284,3 +284,31 @@ export default function AdminPayslips() {
 function Row({ label, value }: { label: string; value: string }) {
   return <div className="flex justify-between"><span className="text-muted-foreground">{label}</span><span className="font-medium">{value}</span></div>;
 }
+
+function ReopenBlock({ payslip, onDone }: { payslip: any; onDone: () => void }) {
+  const [reply, setReply] = useState("");
+  const [busy, setBusy] = useState(false);
+  const submit = async () => {
+    if (!reply.trim()) { toast.error("Escreva uma resposta para o funcionário"); return; }
+    setBusy(true);
+    const { error } = await supabase.rpc("reopen_payslip", { _payslip_id: payslip.id, _admin_response: reply.trim() });
+    setBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Holerite liberado novamente para o funcionário");
+    onDone();
+  };
+  return (
+    <div className="space-y-2 pt-2 border-t border-destructive/20">
+      <Label className="text-xs">Resposta do RH (será enviada ao funcionário)</Label>
+      <Textarea value={reply} onChange={(e) => setReply(e.target.value)}
+        placeholder="Explique a correção ou esclarecimento..." maxLength={500} rows={3} />
+      <Button size="sm" disabled={busy} onClick={submit}
+        className="gradient-primary text-primary-foreground border-0">
+        Resolver e liberar novamente
+      </Button>
+      <p className="text-xs text-muted-foreground">
+        Caso não cheguem a um acordo, o funcionário pode falar com o RH pelo chat.
+      </p>
+    </div>
+  );
+}
