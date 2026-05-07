@@ -189,11 +189,41 @@ export default function Goals() {
       <Tabs defaultValue="me">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="me"><Target className="h-4 w-4 mr-1" /> Minhas metas</TabsTrigger>
+          <TabsTrigger value="sales"><ShoppingBag className="h-4 w-4 mr-1" /> Minhas vendas</TabsTrigger>
           <TabsTrigger value="team"><Users className="h-4 w-4 mr-1" /> Minha equipe</TabsTrigger>
+          <TabsTrigger value="top"><Trophy className="h-4 w-4 mr-1" /> Top 10</TabsTrigger>
           {isSupervisor && <TabsTrigger value="distribute"><Wand2 className="h-4 w-4 mr-1" /> Distribuir meta</TabsTrigger>}
-          {isSupervisor && <TabsTrigger value="update"><TrendingUp className="h-4 w-4 mr-1" /> Atualizar vendas</TabsTrigger>}
+          {isSupervisor && <TabsTrigger value="verify"><CheckCircle2 className="h-4 w-4 mr-1" /> Verificar vendas</TabsTrigger>}
           {!isEmployee && <TabsTrigger value="ranking"><Trophy className="h-4 w-4 mr-1" /> Ranking</TabsTrigger>}
         </TabsList>
+
+        <TabsContent value="sales" className="mt-4">
+          <MySalesPanel userId={user?.id ?? ""} myGoals={myGoals} />
+        </TabsContent>
+
+        <TabsContent value="top" className="mt-4">
+          <Card>
+            <CardHeader><CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5 text-warning" /> Top 10 consultoras</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              {indvList.slice(0, 10).map((r, i) => (
+                <div key={r.user_id} className={`flex items-center justify-between p-2 rounded-lg ${r.user_id === user?.id ? "bg-primary/10 border border-primary/30" : ""}`}>
+                  <span className="flex items-center gap-2 text-sm">
+                    {medalIcon(i)}<span className="font-semibold">{i + 1}º</span>
+                    <span>{r.name}{r.user_id === user?.id && " (você)"}</span>
+                  </span>
+                  <Badge variant={r.pct >= 100 ? "default" : "secondary"}>{Math.min(100, r.pct).toFixed(0)}%</Badge>
+                </div>
+              ))}
+              {indvList.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">Sem metas ainda</p>}
+              {myRank > 10 && myEntry && (
+                <div className="mt-3 pt-3 border-t flex items-center justify-between p-2 rounded-lg bg-primary/10">
+                  <span className="text-sm font-semibold">Sua posição: {myRank}º</span>
+                  <Badge>{Math.min(100, myEntry.pct).toFixed(0)}%</Badge>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="me" className="space-y-4 mt-4">
           {myGoals.length === 0 && <Card><CardContent className="py-12 text-center text-muted-foreground">Nenhuma meta individual definida</CardContent></Card>}
