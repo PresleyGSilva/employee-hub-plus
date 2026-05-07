@@ -1,13 +1,16 @@
 // Tottus Cred — Desktop wrapper (modo Online)
-// Abre sempre a versão mais recente publicada no Lovable.
+// Tenta o domínio personalizado e, se falhar, cai automaticamente no Lovable.
 // Não precisa reinstalar para receber atualizações.
 const { app, BrowserWindow, shell, Menu } = require("electron");
 const path = require("path");
 
-const APP_URL = "https://care-chart-now.lovable.app";
+// Ordem de tentativa: primeiro o domínio bonito, depois o fallback universal
+const URLS = [
+  "https://ttotuscred.online",
+  "https://care-chart-now.lovable.app",
+];
 
 // Corrige tela preta em algumas máquinas (GPUs antigas / drivers Intel/AMD com bugs).
-// Desativa aceleração de hardware e força renderizador de software como fallback estável.
 try { app.disableHardwareAcceleration(); } catch (_) {}
 app.commandLine.appendSwitch("disable-gpu");
 app.commandLine.appendSwitch("disable-gpu-compositing");
@@ -32,12 +35,33 @@ function createWindow() {
 
   Menu.setApplicationMenu(null);
 
-  // Sempre carrega a versão online → sem necessidade de reinstalar para atualizar
-  win.loadURL(APP_URL);
+  let urlIndex = 0;
+  let currentUrl = URLS[0];
+
+  function tryLoad(index) {
+    currentUrl = URLS[index];
+    console.log("[Tottus Cred] Carregando:", currentUrl);
+    win.loadURL(currentUrl);
+  }
+
+  tryLoad(0);
   win.once("ready-to-show", () => win.show());
 
-  // Se a página falhar (offline, DNS, etc.), mostra um aviso amigável em vez de tela preta
-  win.webContents.on("did-fail-load", (_e, code, desc) => {
+  // Fallback automático: se o domínio principal falhar (SSL, DNS, offline),
+  // tenta o próximo da lista. Só mostra erro depois de testar todos.
+  win.webContents.on("did-fail-load", (_e, code, desc, validatedUrl) => {
+    // Ignora erros de subrecursos (ex.: -3 abort de favicon, etc.)
+    if (code === -3) return;
+    if (validatedUrl && !URLS.some((u) => validatedUrl.startsWith(u))) return;
+
+    if (urlIndex < URLS.length - 1) {
+      urlIndex++;
+      console.warn(`[Tottus Cred] Falha em ${currentUrl} (${desc}). Tentando próxima...`);
+      tryLoad(urlIndex);
+      return;
+    }
+
+    // Esgotou todas as opções → tela amigável
     win.loadURL(
       "data:text/html;charset=utf-8," +
         encodeURIComponent(
@@ -52,18 +76,29 @@ function createWindow() {
     );
   });
 
+  // Quando recarregar (F5), volta a tentar do começo
+  win.webContents.on("did-finish-load", () => {
+    // Reset apenas se carregou com sucesso uma das URLs reais
+    if (URLS.some((u) => win.webContents.getURL().startsWith(u))) {
+      urlIndex = URLS.indexOf(URLS.find((u) => win.webContents.getURL().startsWith(u)));
+    }
+  });
+
   // Links externos abrem no navegador padrão
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (!url.startsWith(APP_URL)) {
+    if (!URLS.some((u) => url.startsWith(u))) {
       shell.openExternal(url);
       return { action: "deny" };
     }
     return { action: "allow" };
   });
 
-  // Atalho F5 para recarregar manualmente
+  // Atalhos
   win.webContents.on("before-input-event", (_e, input) => {
-    if (input.key === "F5") win.reload();
+    if (input.key === "F5") {
+      urlIndex = 0;
+      tryLoad(0);
+    }
     if (input.key === "F11") win.setFullScreen(!win.isFullScreen());
   });
 }
