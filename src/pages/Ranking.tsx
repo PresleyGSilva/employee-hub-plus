@@ -255,7 +255,8 @@ export default function Ranking() {
                         <p className="font-bold text-sm">{fmtBRL(Number(t.total))}</p>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </CardContent>
               </Card>
             </>
