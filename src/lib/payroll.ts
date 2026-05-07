@@ -8,11 +8,12 @@ export function calcWorkedMinutes(clockIn: Date, clockOut: Date) {
   return Math.max(0, Math.floor((clockOut.getTime() - clockIn.getTime()) / 60000));
 }
 
-/** Calcula minutos efetivamente trabalhados descontando almoço e café. */
+/** Calcula minutos efetivamente trabalhados descontando almoço, café e lanche. */
 export function calcWorkedFromEntry(e: {
   clock_in?: string | null; clock_out?: string | null;
   lunch_out?: string | null; lunch_in?: string | null;
   break_out?: string | null; break_in?: string | null;
+  snack_out?: string | null; snack_in?: string | null;
 }) {
   if (!e.clock_in || !e.clock_out) return 0;
   let total = calcWorkedMinutes(new Date(e.clock_in), new Date(e.clock_out));
@@ -20,6 +21,8 @@ export function calcWorkedFromEntry(e: {
     total -= calcWorkedMinutes(new Date(e.lunch_out), new Date(e.lunch_in));
   if (e.break_out && e.break_in)
     total -= calcWorkedMinutes(new Date(e.break_out), new Date(e.break_in));
+  if (e.snack_out && e.snack_in)
+    total -= calcWorkedMinutes(new Date(e.snack_out), new Date(e.snack_in));
   return Math.max(0, total);
 }
 
