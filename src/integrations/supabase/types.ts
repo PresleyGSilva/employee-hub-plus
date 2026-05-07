@@ -514,6 +514,8 @@ export type Database = {
           lunch_out: string | null
           notes: string | null
           overtime_minutes: number | null
+          snack_in: string | null
+          snack_out: string | null
           updated_at: string
           user_id: string
           worked_minutes: number | null
@@ -533,6 +535,8 @@ export type Database = {
           lunch_out?: string | null
           notes?: string | null
           overtime_minutes?: number | null
+          snack_in?: string | null
+          snack_out?: string | null
           updated_at?: string
           user_id: string
           worked_minutes?: number | null
@@ -552,6 +556,8 @@ export type Database = {
           lunch_out?: string | null
           notes?: string | null
           overtime_minutes?: number | null
+          snack_in?: string | null
+          snack_out?: string | null
           updated_at?: string
           user_id?: string
           worked_minutes?: number | null
