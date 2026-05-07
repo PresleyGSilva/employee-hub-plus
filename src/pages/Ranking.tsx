@@ -30,14 +30,15 @@ function Podium({ items }: { items: { name: string; avatar?: string | null; tota
     { icon: Crown, color: "text-yellow-300", bg: "from-yellow-400 via-amber-500 to-yellow-600", label: "1º" },
     { icon: Trophy, color: "text-amber-600", bg: "from-amber-700 to-amber-900", label: "3º" },
   ];
-  const podiumIdx = [0, 1, 2];
+  // order[0]=2nd, order[1]=1st, order[2]=3rd
+  // crowns[0]=2nd, crowns[1]=1st, crowns[2]=3rd
 
   return (
     <div className="grid grid-cols-3 gap-3 md:gap-6 items-end max-w-3xl mx-auto">
       {order.map((it, i) => {
-        const c = crowns[podiumIdx[i]];
+        const c = crowns[i];
         const Icon = c.icon;
-        const isFirst = podiumIdx[i] === 0;
+        const isFirst = i === 1; // middle = 1st place
         return (
           <div key={i} className="flex flex-col items-center">
             <div className="relative mb-3">
