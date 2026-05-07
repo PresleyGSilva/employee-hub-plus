@@ -8,17 +8,21 @@ interface AuthCtx {
   session: Session | null;
   user: User | null;
   role: Role;
+  isAdmin: boolean;
+  isSupervisor: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
 }
 
 const Ctx = createContext<AuthCtx>({
-  session: null, user: null, role: null, loading: true, signOut: async () => {},
+  session: null, user: null, role: null, isAdmin: false, isSupervisor: false, loading: true, signOut: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<Role>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isSupervisor, setIsSupervisor] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
