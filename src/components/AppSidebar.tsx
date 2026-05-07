@@ -19,6 +19,7 @@ const employeeItems = [
   { title: "Notificações", url: "/app/notificacoes", icon: Bell },
   { title: "Metas", url: "/app/metas", icon: Target },
   { title: "Férias", url: "/app/ferias", icon: Palmtree },
+  { title: "Clientes", url: "/app/clientes", icon: ClipboardList },
 ];
 
 const adminItems = [
