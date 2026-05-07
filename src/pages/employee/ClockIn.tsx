@@ -33,7 +33,7 @@ type Entry = {
 };
 
 export default function ClockIn() {
-  const { user } = useAuth();
+  const { user, isSupervisor, isAdmin } = useAuth();
   const [today, setToday] = useState<Entry | null>(null);
   const [history, setHistory] = useState<Entry[]>([]);
   const [busy, setBusy] = useState(false);
