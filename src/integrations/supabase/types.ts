@@ -516,6 +516,10 @@ export type Database = {
           overtime_minutes: number | null
           snack_in: string | null
           snack_out: string | null
+          supervisor_approved: boolean
+          supervisor_approved_at: string | null
+          supervisor_approved_by: string | null
+          supervisor_notes: string | null
           updated_at: string
           user_id: string
           worked_minutes: number | null
@@ -537,6 +541,10 @@ export type Database = {
           overtime_minutes?: number | null
           snack_in?: string | null
           snack_out?: string | null
+          supervisor_approved?: boolean
+          supervisor_approved_at?: string | null
+          supervisor_approved_by?: string | null
+          supervisor_notes?: string | null
           updated_at?: string
           user_id: string
           worked_minutes?: number | null
@@ -558,6 +566,10 @@ export type Database = {
           overtime_minutes?: number | null
           snack_in?: string | null
           snack_out?: string | null
+          supervisor_approved?: boolean
+          supervisor_approved_at?: string | null
+          supervisor_approved_by?: string | null
+          supervisor_notes?: string | null
           updated_at?: string
           user_id?: string
           worked_minutes?: number | null
