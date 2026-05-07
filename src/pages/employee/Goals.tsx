@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Target, Trophy, Users, Medal, Crown, Wand2, Plus, TrendingUp, Save } from "lucide-react";
+import { Target, Trophy, Users, Medal, Crown, Wand2, Plus, TrendingUp, Save, ShoppingBag, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { monthNames } from "@/lib/payroll";
 import { toast } from "sonner";
 
