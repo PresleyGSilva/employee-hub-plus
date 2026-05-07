@@ -373,13 +373,8 @@ export default function Goals() {
         )}
 
         {isSupervisor && (
-          <TabsContent value="update" className="space-y-4 mt-4">
-            <UpdateSalesPanel
-              teamGoals={myTeamGoals}
-              members={teamMembers}
-              individualGoals={goals.filter((g) => g.scope === "individual" && teamMembers.some((m) => m.id === g.user_id))}
-              onSaved={load}
-            />
+          <TabsContent value="verify" className="space-y-4 mt-4">
+            <SupervisorVerifyPanel teamMemberIds={teamMembers.map((m) => m.id)} members={teamMembers} onChanged={load} />
           </TabsContent>
         )}
 
