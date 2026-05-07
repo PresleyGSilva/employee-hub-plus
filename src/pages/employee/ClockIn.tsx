@@ -111,10 +111,12 @@ export default function ClockIn() {
   const t = today;
   const can = {
     in: !t?.clock_in,
-    lunchOut: !!t?.clock_in && !t?.lunch_out && !t?.clock_out,
-    lunchIn: !!t?.lunch_out && !t?.lunch_in && !t?.clock_out,
     breakOut: !!t?.clock_in && !t?.break_out && !t?.clock_out,
     breakIn: !!t?.break_out && !t?.break_in && !t?.clock_out,
+    lunchOut: !!t?.clock_in && !t?.lunch_out && !t?.clock_out,
+    lunchIn: !!t?.lunch_out && !t?.lunch_in && !t?.clock_out,
+    snackOut: !!t?.clock_in && !t?.snack_out && !t?.clock_out,
+    snackIn: !!t?.snack_out && !t?.snack_in && !t?.clock_out,
     out: !!t?.clock_in && !t?.clock_out,
   };
 
