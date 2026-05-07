@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Crown, Trophy, Medal, Sparkles, Users, TrendingUp } from "lucide-react";
+import { getTeamEmblem } from "@/lib/teamEmblems";
 
 interface Consultora {
   user_id: string; full_name: string | null; avatar_url: string | null;
