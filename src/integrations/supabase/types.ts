@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      client_entries: {
+        Row: {
+          age: number | null
+          amount: number
+          bank: string | null
+          birth_date: string | null
+          cpf: string | null
+          created_at: string
+          entry_type: Database["public"]["Enums"]["client_entry_type"]
+          extra_field_1: string | null
+          extra_field_2: string | null
+          full_name: string
+          gender: Database["public"]["Enums"]["client_gender"] | null
+          id: string
+          indicated_by: string | null
+          notes: string | null
+          phone: string | null
+          praca: string | null
+          rg: string | null
+          send_date: string | null
+          status: Database["public"]["Enums"]["client_entry_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          amount?: number
+          bank?: string | null
+          birth_date?: string | null
+          cpf?: string | null
+          created_at?: string
+          entry_type?: Database["public"]["Enums"]["client_entry_type"]
+          extra_field_1?: string | null
+          extra_field_2?: string | null
+          full_name: string
+          gender?: Database["public"]["Enums"]["client_gender"] | null
+          id?: string
+          indicated_by?: string | null
+          notes?: string | null
+          phone?: string | null
+          praca?: string | null
+          rg?: string | null
+          send_date?: string | null
+          status?: Database["public"]["Enums"]["client_entry_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          amount?: number
+          bank?: string | null
+          birth_date?: string | null
+          cpf?: string | null
+          created_at?: string
+          entry_type?: Database["public"]["Enums"]["client_entry_type"]
+          extra_field_1?: string | null
+          extra_field_2?: string | null
+          full_name?: string
+          gender?: Database["public"]["Enums"]["client_gender"] | null
+          id?: string
+          indicated_by?: string | null
+          notes?: string | null
+          phone?: string | null
+          praca?: string | null
+          rg?: string | null
+          send_date?: string | null
+          status?: Database["public"]["Enums"]["client_entry_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           doc_type: string | null
@@ -622,6 +694,14 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "employee" | "supervisor"
+      client_entry_status:
+        | "pago"
+        | "pedido_aceito"
+        | "pendente"
+        | "recusado"
+        | "cancelado"
+      client_entry_type: "meu_cliente" | "indicacao"
+      client_gender: "masculino" | "feminino" | "outro"
       goal_scope: "individual" | "team" | "company"
       payslip_status: "pending" | "signed" | "rejected"
       sale_status: "pending" | "approved" | "rejected"
@@ -760,6 +840,15 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "employee", "supervisor"],
+      client_entry_status: [
+        "pago",
+        "pedido_aceito",
+        "pendente",
+        "recusado",
+        "cancelado",
+      ],
+      client_entry_type: ["meu_cliente", "indicacao"],
+      client_gender: ["masculino", "feminino", "outro"],
       goal_scope: ["individual", "team", "company"],
       payslip_status: ["pending", "signed", "rejected"],
       sale_status: ["pending", "approved", "rejected"],
