@@ -115,17 +115,25 @@ export default function Ranking() {
   const [equipes, setEquipes] = useState<Equipe[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const load = async () => {
+    const [c, e] = await Promise.all([
+      supabase.rpc("get_ranking_consultoras", { _month: month, _year: year }),
+      supabase.rpc("get_ranking_teams", { _month: month, _year: year }),
+    ]);
+    setConsultoras((c.data as Consultora[]) ?? []);
+    setEquipes((e.data as Equipe[]) ?? []);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const [c, e] = await Promise.all([
-        supabase.rpc("get_ranking_consultoras", { _month: month, _year: year }),
-        supabase.rpc("get_ranking_teams", { _month: month, _year: year }),
-      ]);
-      setConsultoras((c.data as Consultora[]) ?? []);
-      setEquipes((e.data as Equipe[]) ?? []);
-      setLoading(false);
-    })();
+    setLoading(true);
+    load();
+    const ch = supabase
+      .channel("ranking-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "client_entries" }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [month, year]);
 
   const top10 = consultoras.slice(0, 10);
