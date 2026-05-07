@@ -47,8 +47,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", uid);
     if (error) console.error("[Auth] fetchRole error:", error);
     console.log("[Auth] roles for", uid, data);
-    if (data?.some((r) => r.role === "admin")) setRole("admin");
-    else if (data?.some((r) => r.role === "supervisor")) setRole("supervisor");
+    const admin = !!data?.some((r) => r.role === "admin");
+    const sup = !!data?.some((r) => r.role === "supervisor");
+    setIsAdmin(admin);
+    setIsSupervisor(sup);
+    if (admin) setRole("admin");
+    else if (sup) setRole("supervisor");
     else setRole("employee");
     setLoading(false);
   }
@@ -57,10 +61,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setSession(null);
     setRole(null);
+    setIsAdmin(false);
+    setIsSupervisor(false);
   }
 
   return (
-    <Ctx.Provider value={{ session, user: session?.user ?? null, role, loading, signOut }}>
+    <Ctx.Provider value={{ session, user: session?.user ?? null, role, isAdmin, isSupervisor, loading, signOut }}>
       {children}
     </Ctx.Provider>
   );
