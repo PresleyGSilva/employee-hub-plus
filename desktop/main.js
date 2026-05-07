@@ -4,7 +4,7 @@
 const { app, BrowserWindow, shell, Menu } = require("electron");
 const path = require("path");
 
-const APP_URL = "https://ttotuscred.online";
+const APP_URL = "https://care-chart-now.lovable.app";
 
 // Corrige tela preta em algumas máquinas (GPUs antigas / drivers Intel/AMD com bugs).
 // Desativa aceleração de hardware e força renderizador de software como fallback estável.
