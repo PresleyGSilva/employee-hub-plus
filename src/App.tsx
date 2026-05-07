@@ -69,6 +69,7 @@ const App = () => (
               <Route path="notificacoes" element={<AdminNotifications />} />
               <Route path="metas" element={<AdminGoals />} />
               <Route path="ferias" element={<AdminVacations />} />
+              <Route path="clientes" element={<ClientEntries />} />
               <Route path="chat" element={<Chat />} />
             </Route>
 
