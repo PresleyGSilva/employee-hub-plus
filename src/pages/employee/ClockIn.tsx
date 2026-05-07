@@ -143,10 +143,18 @@ export default function ClockIn() {
           </p>
         </div>
         <CardContent className="p-6 space-y-3">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Button size="lg" disabled={busy || !can.in} onClick={() => stamp("clock_in")}
               className="gradient-primary text-primary-foreground border-0 h-14">
               <LogIn className="h-5 w-5 mr-2" /> Entrada
+            </Button>
+            <Button size="lg" disabled={busy || !can.breakOut} onClick={() => stamp("break_out")}
+              variant="outline" className="h-14 border-2">
+              <Coffee className="h-5 w-5 mr-2" /> Pausa café
+            </Button>
+            <Button size="lg" disabled={busy || !can.breakIn} onClick={() => stamp("break_in")}
+              variant="outline" className="h-14 border-2">
+              <Coffee className="h-5 w-5 mr-2" /> Volta café
             </Button>
             <Button size="lg" disabled={busy || !can.lunchOut} onClick={() => stamp("lunch_out")}
               variant="outline" className="h-14 border-2">
@@ -156,28 +164,30 @@ export default function ClockIn() {
               variant="outline" className="h-14 border-2">
               <UtensilsCrossed className="h-5 w-5 mr-2" /> Volta almoço
             </Button>
-            <Button size="lg" disabled={busy || !can.breakOut} onClick={() => stamp("break_out")}
+            <Button size="lg" disabled={busy || !can.snackOut} onClick={() => stamp("snack_out")}
               variant="outline" className="h-14 border-2">
-              <Coffee className="h-5 w-5 mr-2" /> Saída café
+              <Sandwich className="h-5 w-5 mr-2" /> Pausa lanche
             </Button>
-            <Button size="lg" disabled={busy || !can.breakIn} onClick={() => stamp("break_in")}
+            <Button size="lg" disabled={busy || !can.snackIn} onClick={() => stamp("snack_in")}
               variant="outline" className="h-14 border-2">
-              <Coffee className="h-5 w-5 mr-2" /> Volta café
+              <Sandwich className="h-5 w-5 mr-2" /> Volta lanche
             </Button>
             <Button size="lg" disabled={busy || !can.out} onClick={() => stamp("clock_out")}
               className="h-14 bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              <LogOut className="h-5 w-5 mr-2" /> Saída
+              <LogOut className="h-5 w-5 mr-2" /> Fim do expediente
             </Button>
           </div>
 
           {t && (
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 text-sm pt-6 border-t">
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 text-sm pt-6 border-t">
               <Field label="Entrada" v={t.clock_in} />
+              <Field label="Pausa café" v={t.break_out} />
+              <Field label="Volta café" v={t.break_in} />
               <Field label="Saída almoço" v={t.lunch_out} />
               <Field label="Volta almoço" v={t.lunch_in} />
-              <Field label="Saída café" v={t.break_out} />
-              <Field label="Volta café" v={t.break_in} />
-              <Field label="Saída" v={t.clock_out} />
+              <Field label="Pausa lanche" v={t.snack_out} />
+              <Field label="Volta lanche" v={t.snack_in} />
+              <Field label="Fim" v={t.clock_out} />
             </div>
           )}
 
