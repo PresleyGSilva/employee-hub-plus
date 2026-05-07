@@ -26,11 +26,11 @@ function Podium({ items }: { items: { name: string; avatar?: string | null; tota
   const order = [items[1], items[0], items[2]].filter(Boolean);
   const heights = ["h-32", "h-44", "h-24"];
   const crowns = [
-    { icon: Medal, color: "text-zinc-300", bg: "from-zinc-400 to-zinc-600", label: "2º" },
+    { icon: Trophy, color: "text-zinc-300", bg: "from-zinc-400 to-zinc-600", label: "2º" },
     { icon: Crown, color: "text-yellow-300", bg: "from-yellow-400 via-amber-500 to-yellow-600", label: "1º" },
     { icon: Trophy, color: "text-amber-600", bg: "from-amber-700 to-amber-900", label: "3º" },
   ];
-  const podiumIdx = [1, 0, 2];
+  const podiumIdx = [0, 1, 2];
 
   return (
     <div className="grid grid-cols-3 gap-3 md:gap-6 items-end max-w-3xl mx-auto">
