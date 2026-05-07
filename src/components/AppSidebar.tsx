@@ -38,17 +38,27 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
-  const { role, signOut, user } = useAuth();
+  const { role, signOut, user, isAdmin, isSupervisor, viewAs, setViewAs } = useAuth();
   const navigate = useNavigate();
 
   const isAdminArea = pathname.startsWith("/admin");
   const items = isAdminArea ? adminItems : employeeItems;
-  const roleLabel = isAdminArea ? "Administrador" : role === "admin" ? "Modo Funcionário" : role === "supervisor" ? "Supervisora" : "Funcionário";
+  const roleLabel = isAdminArea
+    ? "Administrador"
+    : role === "supervisor"
+    ? "Supervisora"
+    : isAdmin
+    ? "Modo Funcionário"
+    : "Funcionário";
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/auth");
   };
+
+  const goAdmin = () => { setViewAs(null); navigate("/admin"); };
+  const goSupervisor = () => { setViewAs("supervisor"); navigate("/app"); };
+  const goEmployee = () => { setViewAs("employee"); navigate("/app"); };
 
   return (
     <Sidebar collapsible="icon">
@@ -84,12 +94,44 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-3 space-y-2">
-        {role === "admin" && (
-          <Button size="sm" onClick={() => navigate(isAdminArea ? "/app" : "/admin")}
-            className="w-full justify-start bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/80 border border-sidebar-border">
-            {isAdminArea ? <User className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
-            {!collapsed && <span className="ml-2">{isAdminArea ? "Ver como funcionário" : "Painel Admin"}</span>}
-          </Button>
+        {isAdmin && (
+          <div className="space-y-1">
+            {!isAdminArea && (
+              <Button size="sm" onClick={goAdmin}
+                className="w-full justify-start bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/80 border border-sidebar-border">
+                <Shield className="h-4 w-4" />
+                {!collapsed && <span className="ml-2">Painel Admin</span>}
+              </Button>
+            )}
+            {isAdminArea && isSupervisor && (
+              <Button size="sm" onClick={goSupervisor}
+                className="w-full justify-start bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/80 border border-sidebar-border">
+                <Shield className="h-4 w-4" />
+                {!collapsed && <span className="ml-2">Ver como supervisora</span>}
+              </Button>
+            )}
+            {isAdminArea && (
+              <Button size="sm" onClick={goEmployee}
+                className="w-full justify-start bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/80 border border-sidebar-border">
+                <User className="h-4 w-4" />
+                {!collapsed && <span className="ml-2">Ver como funcionária</span>}
+              </Button>
+            )}
+            {!isAdminArea && isSupervisor && viewAs !== "supervisor" && (
+              <Button size="sm" variant="outline" onClick={goSupervisor}
+                className="w-full justify-start">
+                <Shield className="h-4 w-4" />
+                {!collapsed && <span className="ml-2">Ver como supervisora</span>}
+              </Button>
+            )}
+            {!isAdminArea && viewAs !== "employee" && (
+              <Button size="sm" variant="outline" onClick={goEmployee}
+                className="w-full justify-start">
+                <User className="h-4 w-4" />
+                {!collapsed && <span className="ml-2">Ver como funcionária</span>}
+              </Button>
+            )}
+          </div>
         )}
         {!collapsed && user && (
           <div className="text-xs text-sidebar-foreground/70 px-2 truncate">
