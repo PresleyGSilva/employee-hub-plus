@@ -33,6 +33,7 @@ const adminItems = [
   { title: "Notificações", url: "/admin/notificacoes", icon: Bell },
   { title: "Metas", url: "/admin/metas", icon: Target },
   { title: "Férias", url: "/admin/ferias", icon: Palmtree },
+  { title: "Clientes", url: "/admin/clientes", icon: ClipboardList },
 ];
 
 export function AppSidebar() {
