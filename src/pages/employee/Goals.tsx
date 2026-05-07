@@ -444,91 +444,161 @@ export default function Goals() {
   );
 }
 
-function UpdateSalesPanel({ teamGoals, members, individualGoals, onSaved }: { teamGoals: any[]; members: any[]; individualGoals: any[]; onSaved: () => void }) {
-  const [values, setValues] = useState<Record<string, number>>({});
-  const [teamValues, setTeamValues] = useState<Record<string, number>>({});
+function statusBadge(status: string) {
+  if (status === "approved") return <Badge className="bg-success text-success-foreground"><CheckCircle2 className="h-3 w-3 mr-1" />Aprovada</Badge>;
+  if (status === "rejected") return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Recusada</Badge>;
+  return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Pendente</Badge>;
+}
+
+function MySalesPanel({ userId, myGoals }: { userId: string; myGoals: any[] }) {
+  const [sales, setSales] = useState<any[]>([]);
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [amount, setAmount] = useState<number>(0);
+  const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    const init: Record<string, number> = {};
-    individualGoals.forEach((g) => { init[g.id] = Number(g.current_value || 0); });
-    setValues(init);
-    const tinit: Record<string, number> = {};
-    teamGoals.forEach((g) => { tinit[g.id] = Number(g.current_value || 0); });
-    setTeamValues(tinit);
-  }, [individualGoals, teamGoals]);
-
-  const save = async () => {
-    setBusy(true);
-    const updates: PromiseLike<any>[] = [];
-    for (const g of individualGoals) {
-      const v = Number(values[g.id] ?? 0);
-      if (v !== Number(g.current_value || 0)) {
-        updates.push(supabase.from("goals").update({ current_value: v }).eq("id", g.id).then((r) => r));
-      }
-    }
-    for (const g of teamGoals) {
-      const v = Number(teamValues[g.id] ?? 0);
-      if (v !== Number(g.current_value || 0)) {
-        updates.push(supabase.from("goals").update({ current_value: v }).eq("id", g.id).then((r) => r));
-      }
-    }
-    const res = await Promise.all(updates);
-    const err = res.find((r: any) => r?.error)?.error;
-    setBusy(false);
-    if (err) return toast.error(err.message);
-    toast.success("Vendas atualizadas!");
-    onSaved();
+  const load = async () => {
+    if (!userId) return;
+    const { data } = await supabase.from("sales_entries").select("*").eq("user_id", userId).order("sale_date", { ascending: false }).limit(100);
+    setSales(data ?? []);
   };
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [userId]);
+
+  const submit = async () => {
+    if (!amount || amount <= 0) return toast.error("Informe o valor da venda");
+    setBusy(true);
+    const goal = myGoals[0];
+    const { error } = await supabase.from("sales_entries").insert({
+      user_id: userId, sale_date: date, amount, notes: notes || null,
+      goal_id: goal?.id ?? null, status: "pending",
+    });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Venda registrada! Aguarde a verificação da supervisora.");
+    setAmount(0); setNotes("");
+    load();
+  };
+
+  const removePending = async (id: string) => {
+    const { error } = await supabase.from("sales_entries").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Venda removida");
+    load();
+  };
+
+  const totals = sales.reduce((acc, s) => {
+    acc[s.status] = (acc[s.status] || 0) + Number(s.amount || 0);
+    return acc;
+  }, {} as Record<string, number>);
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><ShoppingBag className="h-5 w-5" /> Registrar venda do dia</CardTitle>
+          <p className="text-sm text-muted-foreground">Lance suas vendas diariamente. Toda sexta-feira a supervisora confere e aprova — só depois conta no ranking.</p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div><Label>Data</Label><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
+            <div><Label>Valor (R$)</Label><Input type="number" step="0.01" value={amount || ""} onChange={(e) => setAmount(Number(e.target.value))} /></div>
+            <div className="flex items-end"><Button onClick={submit} disabled={busy} className="w-full gradient-primary text-primary-foreground border-0"><Plus className="h-4 w-4 mr-1" /> Registrar</Button></div>
+          </div>
+          <div><Label>Observação (opcional)</Label><Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Cliente, produto, contrato..." /></div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Pendente</p><p className="text-2xl font-bold">R$ {(totals.pending || 0).toLocaleString("pt-BR")}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Aprovada</p><p className="text-2xl font-bold text-success">R$ {(totals.approved || 0).toLocaleString("pt-BR")}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Recusada</p><p className="text-2xl font-bold text-destructive">R$ {(totals.rejected || 0).toLocaleString("pt-BR")}</p></CardContent></Card>
+      </div>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Histórico</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          {sales.length === 0 && <p className="text-sm text-muted-foreground py-6 text-center">Nenhuma venda lançada ainda.</p>}
+          {sales.map((s) => (
+            <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-lg border">
+              <div className="text-sm">
+                <p className="font-semibold">R$ {Number(s.amount).toLocaleString("pt-BR")} <span className="text-xs text-muted-foreground">— {new Date(s.sale_date).toLocaleDateString("pt-BR")}</span></p>
+                {s.notes && <p className="text-xs text-muted-foreground">{s.notes}</p>}
+                {s.status === "rejected" && s.rejection_reason && <p className="text-xs text-destructive">Motivo: {s.rejection_reason}</p>}
+              </div>
+              <div className="flex items-center gap-2">
+                {statusBadge(s.status)}
+                {s.status === "pending" && <Button size="sm" variant="ghost" onClick={() => removePending(s.id)}>Excluir</Button>}
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function SupervisorVerifyPanel({ teamMemberIds, members, onChanged }: { teamMemberIds: string[]; members: any[]; onChanged: () => void }) {
+  const [sales, setSales] = useState<any[]>([]);
+  const [tab, setTab] = useState<"pending" | "all">("pending");
+  const [reasons, setReasons] = useState<Record<string, string>>({});
+
+  const load = async () => {
+    if (!teamMemberIds.length) { setSales([]); return; }
+    const { data } = await supabase.from("sales_entries").select("*").in("user_id", teamMemberIds).order("sale_date", { ascending: false }).limit(300);
+    setSales(data ?? []);
+  };
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [teamMemberIds.join(",")]);
+
+  const approve = async (s: any) => {
+    const { error } = await supabase.from("sales_entries").update({ status: "approved", verified_at: new Date().toISOString(), rejection_reason: null }).eq("id", s.id);
+    if (error) return toast.error(error.message);
+    toast.success("Venda aprovada");
+    load(); onChanged();
+  };
+  const reject = async (s: any) => {
+    const reason = reasons[s.id] || "";
+    const { error } = await supabase.from("sales_entries").update({ status: "rejected", verified_at: new Date().toISOString(), rejection_reason: reason || "Não conferida" }).eq("id", s.id);
+    if (error) return toast.error(error.message);
+    toast.success("Venda recusada");
+    load(); onChanged();
+  };
+
+  const visible = tab === "pending" ? sales.filter((s) => s.status === "pending") : sales;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5" /> Atualizar vendas (semanal)</CardTitle>
-        <p className="text-sm text-muted-foreground">Toda sexta-feira, registre o quanto a equipe e cada consultora venderam no mês.</p>
+        <CardTitle className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5" /> Verificar vendas da equipe</CardTitle>
+        <p className="text-sm text-muted-foreground">Toda sexta-feira, confira as vendas lançadas pelas consultoras. Ao aprovar, o valor é somado automaticamente à meta da consultora.</p>
       </CardHeader>
-      <CardContent className="space-y-5">
-        {teamGoals.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-sm font-semibold">Meta da equipe</p>
-            {teamGoals.map((g) => {
-              const v = Number(teamValues[g.id] ?? 0);
-              const pct = g.target_value > 0 ? (v / Number(g.target_value)) * 100 : 0;
-              return (
-                <div key={g.id} className="grid grid-cols-12 gap-2 items-center p-2 rounded-lg border">
-                  <div className="col-span-12 sm:col-span-5 text-sm font-medium">🎯 {g.title}<div className="text-xs text-muted-foreground">Meta: {Number(g.target_value).toLocaleString("pt-BR")}</div></div>
-                  <div className="col-span-7 sm:col-span-4">
-                    <Input type="number" step="0.01" value={teamValues[g.id] ?? ""} onChange={(e) => setTeamValues((s) => ({ ...s, [g.id]: Number(e.target.value) }))} />
-                  </div>
-                  <div className="col-span-5 sm:col-span-3 text-right text-sm font-bold text-primary">{Math.min(100, pct).toFixed(0)}%</div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        <div className="space-y-2 pt-3 border-t">
-          <p className="text-sm font-semibold">Vendas por consultora</p>
-          {individualGoals.length === 0 && <p className="text-sm text-muted-foreground py-3 text-center">Nenhuma meta individual ainda. Distribua a meta primeiro.</p>}
-          {individualGoals.map((g) => {
-            const member = members.find((m) => m.id === g.user_id);
-            const v = Number(values[g.id] ?? 0);
-            const pct = g.target_value > 0 ? (v / Number(g.target_value)) * 100 : 0;
-            return (
-              <div key={g.id} className="grid grid-cols-12 gap-2 items-center p-2 rounded-lg border">
-                <div className="col-span-12 sm:col-span-5 text-sm font-medium">{member?.full_name ?? "—"}<div className="text-xs text-muted-foreground">Meta: {Number(g.target_value).toLocaleString("pt-BR")}</div></div>
-                <div className="col-span-7 sm:col-span-4">
-                  <Input type="number" step="0.01" value={values[g.id] ?? ""} onChange={(e) => setValues((s) => ({ ...s, [g.id]: Number(e.target.value) }))} />
-                </div>
-                <div className="col-span-5 sm:col-span-3 text-right text-sm font-bold text-primary">{Math.min(100, pct).toFixed(0)}%</div>
-              </div>
-            );
-          })}
+      <CardContent className="space-y-3">
+        <div className="flex gap-2">
+          <Button variant={tab === "pending" ? "default" : "outline"} size="sm" onClick={() => setTab("pending")}>Pendentes ({sales.filter((s) => s.status === "pending").length})</Button>
+          <Button variant={tab === "all" ? "default" : "outline"} size="sm" onClick={() => setTab("all")}>Todas</Button>
         </div>
-
-        <Button onClick={save} disabled={busy} className="w-full gradient-primary text-primary-foreground border-0">
-          <Save className="h-4 w-4 mr-1" /> Salvar vendas
-        </Button>
+        {visible.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">Nenhuma venda {tab === "pending" ? "pendente" : ""} no momento.</p>}
+        {visible.map((s) => {
+          const member = members.find((m) => m.id === s.user_id);
+          return (
+            <div key={s.id} className="p-3 rounded-lg border space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-sm">
+                  <p className="font-semibold">{member?.full_name ?? "—"} — R$ {Number(s.amount).toLocaleString("pt-BR")}</p>
+                  <p className="text-xs text-muted-foreground">{new Date(s.sale_date).toLocaleDateString("pt-BR")}{s.notes ? ` · ${s.notes}` : ""}</p>
+                </div>
+                {statusBadge(s.status)}
+              </div>
+              {s.status === "pending" && (
+                <div className="flex flex-wrap gap-2 items-center">
+                  <Input className="flex-1 min-w-[180px] h-8" placeholder="Motivo da recusa (opcional)" value={reasons[s.id] || ""} onChange={(e) => setReasons((r) => ({ ...r, [s.id]: e.target.value }))} />
+                  <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90" onClick={() => approve(s)}><CheckCircle2 className="h-4 w-4 mr-1" />Aprovar</Button>
+                  <Button size="sm" variant="destructive" onClick={() => reject(s)}><XCircle className="h-4 w-4 mr-1" />Recusar</Button>
+                </div>
+              )}
+              {s.status === "rejected" && s.rejection_reason && <p className="text-xs text-destructive">Motivo: {s.rejection_reason}</p>}
+            </div>
+          );
+        })}
       </CardContent>
     </Card>
   );
