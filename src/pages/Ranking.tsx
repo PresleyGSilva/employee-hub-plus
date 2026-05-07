@@ -188,6 +188,7 @@ export default function Ranking() {
                   total: Number(c.total),
                   subtitle: c.team_name || undefined,
                   color: c.team_color,
+                  emblem: getTeamEmblem(c.team_name),
                 }))} />
               </div>
 
@@ -205,6 +206,7 @@ export default function Ranking() {
                         subtitle={c.team_name || undefined}
                         total={Number(c.total)}
                         color={c.team_color}
+                        emblem={getTeamEmblem(c.team_name)}
                       />
                     ))}
                   </CardContent>
