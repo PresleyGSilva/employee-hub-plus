@@ -101,6 +101,12 @@ function RankRow({ rank, name, avatar, subtitle, total, color, emblem }: {
         {subtitle && <p className="text-xs text-muted-foreground truncate">{subtitle}</p>}
       </div>
       <div className="text-right shrink-0">
+        <p className="font-bold text-sm">{fmtBRL(total)}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function Ranking() {
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
