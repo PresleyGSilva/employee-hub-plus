@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { LogIn, LogOut, Clock, Coffee, UtensilsCrossed } from "lucide-react";
+import { LogIn, LogOut, Clock, Coffee, UtensilsCrossed, Sandwich } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -23,6 +23,8 @@ type Entry = {
   lunch_in: string | null;
   break_out: string | null;
   break_in: string | null;
+  snack_out: string | null;
+  snack_in: string | null;
   worked_minutes: number | null;
   late_minutes: number | null;
   overtime_minutes: number | null;
@@ -31,7 +33,7 @@ type Entry = {
 };
 
 export default function ClockIn() {
-  const { user } = useAuth();
+  const { user, isSupervisor, isAdmin } = useAuth();
   const [today, setToday] = useState<Entry | null>(null);
   const [history, setHistory] = useState<Entry[]>([]);
   const [busy, setBusy] = useState(false);
@@ -60,8 +62,22 @@ export default function ClockIn() {
 
   useEffect(() => { load(); }, [user]);
 
-  const stamp = async (field: "clock_in" | "lunch_out" | "lunch_in" | "break_out" | "break_in" | "clock_out") => {
+  const stamp = async (field: "clock_in" | "lunch_out" | "lunch_in" | "break_out" | "break_in" | "snack_out" | "snack_in" | "clock_out") => {
     if (!user) return;
+
+    // Restrição de horário para "Entrada"
+    if (field === "clock_in") {
+      const n = new Date();
+      const minutes = n.getHours() * 60 + n.getMinutes();
+      const allowed = (isAdmin || isSupervisor) ? 7 * 60 + 40 : 7 * 60 + 59;
+      if (minutes < allowed) {
+        const h = Math.floor(allowed / 60);
+        const m = allowed % 60;
+        toast.error(`Entrada permitida apenas a partir das ${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}`);
+        return;
+      }
+    }
+
     setBusy(true);
     const todayStr = format(new Date(), "yyyy-MM-dd");
     const nowIso = new Date().toISOString();
@@ -95,10 +111,12 @@ export default function ClockIn() {
   const t = today;
   const can = {
     in: !t?.clock_in,
-    lunchOut: !!t?.clock_in && !t?.lunch_out && !t?.clock_out,
-    lunchIn: !!t?.lunch_out && !t?.lunch_in && !t?.clock_out,
     breakOut: !!t?.clock_in && !t?.break_out && !t?.clock_out,
     breakIn: !!t?.break_out && !t?.break_in && !t?.clock_out,
+    lunchOut: !!t?.clock_in && !t?.lunch_out && !t?.clock_out,
+    lunchIn: !!t?.lunch_out && !t?.lunch_in && !t?.clock_out,
+    snackOut: !!t?.clock_in && !t?.snack_out && !t?.clock_out,
+    snackIn: !!t?.snack_out && !t?.snack_in && !t?.clock_out,
     out: !!t?.clock_in && !t?.clock_out,
   };
 
@@ -125,10 +143,18 @@ export default function ClockIn() {
           </p>
         </div>
         <CardContent className="p-6 space-y-3">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Button size="lg" disabled={busy || !can.in} onClick={() => stamp("clock_in")}
               className="gradient-primary text-primary-foreground border-0 h-14">
               <LogIn className="h-5 w-5 mr-2" /> Entrada
+            </Button>
+            <Button size="lg" disabled={busy || !can.breakOut} onClick={() => stamp("break_out")}
+              variant="outline" className="h-14 border-2">
+              <Coffee className="h-5 w-5 mr-2" /> Pausa café
+            </Button>
+            <Button size="lg" disabled={busy || !can.breakIn} onClick={() => stamp("break_in")}
+              variant="outline" className="h-14 border-2">
+              <Coffee className="h-5 w-5 mr-2" /> Volta café
             </Button>
             <Button size="lg" disabled={busy || !can.lunchOut} onClick={() => stamp("lunch_out")}
               variant="outline" className="h-14 border-2">
@@ -138,28 +164,30 @@ export default function ClockIn() {
               variant="outline" className="h-14 border-2">
               <UtensilsCrossed className="h-5 w-5 mr-2" /> Volta almoço
             </Button>
-            <Button size="lg" disabled={busy || !can.breakOut} onClick={() => stamp("break_out")}
+            <Button size="lg" disabled={busy || !can.snackOut} onClick={() => stamp("snack_out")}
               variant="outline" className="h-14 border-2">
-              <Coffee className="h-5 w-5 mr-2" /> Saída café
+              <Sandwich className="h-5 w-5 mr-2" /> Pausa lanche
             </Button>
-            <Button size="lg" disabled={busy || !can.breakIn} onClick={() => stamp("break_in")}
+            <Button size="lg" disabled={busy || !can.snackIn} onClick={() => stamp("snack_in")}
               variant="outline" className="h-14 border-2">
-              <Coffee className="h-5 w-5 mr-2" /> Volta café
+              <Sandwich className="h-5 w-5 mr-2" /> Volta lanche
             </Button>
             <Button size="lg" disabled={busy || !can.out} onClick={() => stamp("clock_out")}
               className="h-14 bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              <LogOut className="h-5 w-5 mr-2" /> Saída
+              <LogOut className="h-5 w-5 mr-2" /> Fim do expediente
             </Button>
           </div>
 
           {t && (
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 text-sm pt-6 border-t">
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 text-sm pt-6 border-t">
               <Field label="Entrada" v={t.clock_in} />
+              <Field label="Pausa café" v={t.break_out} />
+              <Field label="Volta café" v={t.break_in} />
               <Field label="Saída almoço" v={t.lunch_out} />
               <Field label="Volta almoço" v={t.lunch_in} />
-              <Field label="Saída café" v={t.break_out} />
-              <Field label="Volta café" v={t.break_in} />
-              <Field label="Saída" v={t.clock_out} />
+              <Field label="Pausa lanche" v={t.snack_out} />
+              <Field label="Volta lanche" v={t.snack_in} />
+              <Field label="Fim" v={t.clock_out} />
             </div>
           )}
 
