@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Moon, Sun } from "lucide-react";
 
 export default function AppLayout({ requireAdmin = false }: { requireAdmin?: boolean }) {
-  const { session, role, loading } = useAuth();
+  const { session, isAdmin, loading } = useAuth();
   const { theme, toggle } = useTheme();
 
   if (loading) {
@@ -18,7 +18,7 @@ export default function AppLayout({ requireAdmin = false }: { requireAdmin?: boo
     );
   }
   if (!session) return <Navigate to="/auth" replace />;
-  if (requireAdmin && role !== "admin") return <Navigate to="/app" replace />;
+  if (requireAdmin && !isAdmin) return <Navigate to="/app" replace />;
 
   return (
     <SidebarProvider>
