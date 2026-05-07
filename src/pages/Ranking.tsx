@@ -22,8 +22,7 @@ const fmtBRL = (n: number) =>
 const initials = (name?: string | null) =>
   (name || "?").split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
 
-function Podium({ items }: { items: { name: string; avatar?: string | null; total: number; subtitle?: string; color?: string | null }[] }) {
-  // Order: [2nd, 1st, 3rd]
+function Podium({ items }: { items: { name: string; avatar?: string | null; total: number; subtitle?: string; color?: string | null; emblem?: string | null }[] }) {
   const order = [items[1], items[0], items[2]].filter(Boolean);
   const heights = ["h-32", "h-44", "h-24"];
   const crowns = [
@@ -31,7 +30,6 @@ function Podium({ items }: { items: { name: string; avatar?: string | null; tota
     { icon: Crown, color: "text-yellow-300", bg: "from-yellow-400 via-amber-500 to-yellow-600", label: "1º" },
     { icon: Trophy, color: "text-amber-600", bg: "from-amber-700 to-amber-900", label: "3º" },
   ];
-  // map original positions to crown index
   const podiumIdx = [1, 0, 2];
 
   return (
@@ -44,12 +42,15 @@ function Podium({ items }: { items: { name: string; avatar?: string | null; tota
           <div key={i} className="flex flex-col items-center">
             <div className="relative mb-3">
               {isFirst && (
-                <Crown className="absolute -top-7 left-1/2 -translate-x-1/2 h-10 w-10 text-yellow-400 drop-shadow-[0_2px_8px_rgba(250,204,21,0.6)] animate-pulse" fill="currentColor" />
+                <Crown
+                  className="absolute -top-8 left-1/2 -translate-x-1/2 h-10 w-10 text-yellow-400 drop-shadow-[0_2px_8px_rgba(250,204,21,0.7)] animate-[spin_4s_linear_infinite]"
+                  fill="currentColor"
+                />
               )}
               {!isFirst && (
                 <Icon className={`absolute -top-5 left-1/2 -translate-x-1/2 h-7 w-7 ${c.color} drop-shadow-md`} fill="currentColor" />
               )}
-              <div className={`rounded-full p-1 bg-gradient-to-br ${c.bg} shadow-2xl ${isFirst ? "ring-4 ring-yellow-400/40" : ""}`}>
+              <div className={`relative rounded-full p-1 bg-gradient-to-br ${c.bg} shadow-2xl ${isFirst ? "ring-4 ring-yellow-400/40" : ""}`}>
                 <div className={`${isFirst ? "h-24 w-24 md:h-28 md:w-28" : "h-20 w-20 md:h-24 md:w-24"} rounded-full bg-card overflow-hidden flex items-center justify-center text-xl font-bold text-primary border-4 border-card`}>
                   {it.avatar ? (
                     <img src={it.avatar} alt={it.name} className="h-full w-full object-cover" />
@@ -57,6 +58,11 @@ function Podium({ items }: { items: { name: string; avatar?: string | null; tota
                     <span>{initials(it.name)}</span>
                   )}
                 </div>
+                {it.emblem && (
+                  <div className="absolute -bottom-1 -right-1 h-9 w-9 rounded-full bg-white shadow-lg border-2 border-white overflow-hidden flex items-center justify-center">
+                    <img src={it.emblem} alt="emblema" className="h-full w-full object-contain" />
+                  </div>
+                )}
               </div>
             </div>
             <div className={`w-full rounded-t-2xl ${heights[i]} bg-gradient-to-t ${c.bg} shadow-xl flex flex-col items-center justify-start pt-3 px-2 text-center`}>
@@ -72,28 +78,29 @@ function Podium({ items }: { items: { name: string; avatar?: string | null; tota
   );
 }
 
-function RankRow({ rank, name, avatar, subtitle, total, color }: {
-  rank: number; name: string; avatar?: string | null; subtitle?: string; total: number; color?: string | null;
+function RankRow({ rank, name, avatar, subtitle, total, color, emblem }: {
+  rank: number; name: string; avatar?: string | null; subtitle?: string; total: number; color?: string | null; emblem?: string | null;
 }) {
   return (
     <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-card border hover:shadow-md transition-all hover:-translate-y-0.5">
       <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-sm shrink-0">
         {rank}
       </div>
-      <div className="h-11 w-11 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center font-semibold text-primary shrink-0 border-2" style={color ? { borderColor: color } : {}}>
-        {avatar ? <img src={avatar} alt={name} className="h-full w-full object-cover" /> : initials(name)}
+      <div className="relative shrink-0">
+        <div className="h-11 w-11 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center font-semibold text-primary border-2" style={color ? { borderColor: color } : {}}>
+          {avatar ? <img src={avatar} alt={name} className="h-full w-full object-cover" /> : initials(name)}
+        </div>
+        {emblem && (
+          <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-white border border-white shadow overflow-hidden flex items-center justify-center">
+            <img src={emblem} alt="" className="h-full w-full object-contain" />
+          </div>
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <p className="font-medium text-sm truncate">{name}</p>
         {subtitle && <p className="text-xs text-muted-foreground truncate">{subtitle}</p>}
       </div>
       <div className="text-right shrink-0">
-        <p className="font-bold text-sm">{fmtBRL(total)}</p>
-      </div>
-    </div>
-  );
-}
-
 export default function Ranking() {
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
