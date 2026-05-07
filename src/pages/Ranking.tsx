@@ -49,7 +49,7 @@ function Podium({ items }: { items: { name: string; avatar?: string | null; tota
                 />
               )}
               {!isFirst && (
-                <Icon className={`absolute -top-5 left-1/2 -translate-x-1/2 h-7 w-7 ${c.color} drop-shadow-md`} fill="currentColor" />
+                <Trophy className={`absolute -top-5 left-1/2 -translate-x-1/2 h-7 w-7 ${c.color} drop-shadow-md`} strokeWidth={2.5} />
               )}
               <div className={`relative rounded-full p-1 bg-gradient-to-br ${c.bg} shadow-2xl ${isFirst ? "ring-4 ring-yellow-400/40" : ""}`}>
                 <div className={`${isFirst ? "h-24 w-24 md:h-28 md:w-28" : "h-20 w-20 md:h-24 md:w-24"} rounded-full bg-card overflow-hidden flex items-center justify-center text-xl font-bold text-primary border-4 border-card`}>
