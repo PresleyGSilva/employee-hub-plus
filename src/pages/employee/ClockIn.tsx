@@ -62,8 +62,22 @@ export default function ClockIn() {
 
   useEffect(() => { load(); }, [user]);
 
-  const stamp = async (field: "clock_in" | "lunch_out" | "lunch_in" | "break_out" | "break_in" | "clock_out") => {
+  const stamp = async (field: "clock_in" | "lunch_out" | "lunch_in" | "break_out" | "break_in" | "snack_out" | "snack_in" | "clock_out") => {
     if (!user) return;
+
+    // Restrição de horário para "Entrada"
+    if (field === "clock_in") {
+      const n = new Date();
+      const minutes = n.getHours() * 60 + n.getMinutes();
+      const allowed = (isAdmin || isSupervisor) ? 7 * 60 + 40 : 7 * 60 + 59;
+      if (minutes < allowed) {
+        const h = Math.floor(allowed / 60);
+        const m = allowed % 60;
+        toast.error(`Entrada permitida apenas a partir das ${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}`);
+        return;
+      }
+    }
+
     setBusy(true);
     const todayStr = format(new Date(), "yyyy-MM-dd");
     const nowIso = new Date().toISOString();
