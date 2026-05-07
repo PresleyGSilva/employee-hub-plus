@@ -683,6 +683,30 @@ export type Database = {
           id: string
         }[]
       }
+      get_ranking_consultoras: {
+        Args: { _month: number; _year: number }
+        Returns: {
+          avatar_url: string
+          entries_count: number
+          full_name: string
+          team_color: string
+          team_id: string
+          team_name: string
+          total: number
+          user_id: string
+        }[]
+      }
+      get_ranking_teams: {
+        Args: { _month: number; _year: number }
+        Returns: {
+          entries_count: number
+          members_count: number
+          team_color: string
+          team_id: string
+          team_name: string
+          total: number
+        }[]
+      }
       get_user_team: { Args: { _user: string }; Returns: string }
       has_role: {
         Args: {
