@@ -26,6 +26,7 @@ import Vacations from "./pages/employee/Vacations";
 import EmployeeFolders from "./pages/admin/EmployeeFolders";
 import Teams from "./pages/admin/Teams";
 import Chat from "./pages/Chat";
+import ClientEntries from "./pages/ClientEntries";
 import { MessageAlert } from "./components/MessageAlert";
 
 const queryClient = new QueryClient();
