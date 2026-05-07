@@ -26,6 +26,7 @@ import Vacations from "./pages/employee/Vacations";
 import EmployeeFolders from "./pages/admin/EmployeeFolders";
 import Teams from "./pages/admin/Teams";
 import Chat from "./pages/Chat";
+import ClientEntries from "./pages/ClientEntries";
 import { MessageAlert } from "./components/MessageAlert";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="notificacoes" element={<Notifications />} />
               <Route path="metas" element={<Goals />} />
               <Route path="ferias" element={<Vacations />} />
+              <Route path="clientes" element={<ClientEntries />} />
               <Route path="chat" element={<Chat />} />
             </Route>
 
@@ -67,6 +69,7 @@ const App = () => (
               <Route path="notificacoes" element={<AdminNotifications />} />
               <Route path="metas" element={<AdminGoals />} />
               <Route path="ferias" element={<AdminVacations />} />
+              <Route path="clientes" element={<ClientEntries />} />
               <Route path="chat" element={<Chat />} />
             </Route>
 

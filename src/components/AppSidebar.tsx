@@ -6,7 +6,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
-  LayoutDashboard, Clock, FileText, Bell, Target, Users, FolderOpen, LogOut, Shield, User, MessageCircle, Palmtree, UsersRound,
+  LayoutDashboard, Clock, FileText, Bell, Target, Users, FolderOpen, LogOut, Shield, User, MessageCircle, Palmtree, UsersRound, ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -19,6 +19,7 @@ const employeeItems = [
   { title: "Notificações", url: "/app/notificacoes", icon: Bell },
   { title: "Metas", url: "/app/metas", icon: Target },
   { title: "Férias", url: "/app/ferias", icon: Palmtree },
+  { title: "Clientes", url: "/app/clientes", icon: ClipboardList },
 ];
 
 const adminItems = [
@@ -32,6 +33,7 @@ const adminItems = [
   { title: "Notificações", url: "/admin/notificacoes", icon: Bell },
   { title: "Metas", url: "/admin/metas", icon: Target },
   { title: "Férias", url: "/admin/ferias", icon: Palmtree },
+  { title: "Clientes", url: "/admin/clientes", icon: ClipboardList },
 ];
 
 export function AppSidebar() {
