@@ -6,6 +6,14 @@ const path = require("path");
 
 const APP_URL = "https://ttotuscred.online";
 
+// Corrige tela preta em algumas máquinas (GPUs antigas / drivers Intel/AMD com bugs).
+// Desativa aceleração de hardware e força renderizador de software como fallback estável.
+try { app.disableHardwareAcceleration(); } catch (_) {}
+app.commandLine.appendSwitch("disable-gpu");
+app.commandLine.appendSwitch("disable-gpu-compositing");
+app.commandLine.appendSwitch("disable-software-rasterizer");
+app.commandLine.appendSwitch("no-sandbox");
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1280,
@@ -26,6 +34,23 @@ function createWindow() {
 
   // Sempre carrega a versão online → sem necessidade de reinstalar para atualizar
   win.loadURL(APP_URL);
+  win.once("ready-to-show", () => win.show());
+
+  // Se a página falhar (offline, DNS, etc.), mostra um aviso amigável em vez de tela preta
+  win.webContents.on("did-fail-load", (_e, code, desc) => {
+    win.loadURL(
+      "data:text/html;charset=utf-8," +
+        encodeURIComponent(
+          `<html><body style="font-family:system-ui;background:#0b0b0f;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;padding:24px">
+            <div>
+              <h2>Não foi possível carregar o Tottus Cred</h2>
+              <p style="opacity:.7">${desc} (código ${code})</p>
+              <p>Verifique sua conexão com a internet e pressione <b>F5</b> para tentar de novo.</p>
+            </div>
+          </body></html>`
+        )
+    );
+  });
 
   // Links externos abrem no navegador padrão
   win.webContents.setWindowOpenHandler(({ url }) => {

@@ -354,6 +354,51 @@ export type Database = {
           },
         ]
       }
+      sales_entries: {
+        Row: {
+          amount: number
+          created_at: string
+          goal_id: string | null
+          id: string
+          notes: string | null
+          rejection_reason: string | null
+          sale_date: string
+          status: Database["public"]["Enums"]["sale_status"]
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          goal_id?: string | null
+          id?: string
+          notes?: string | null
+          rejection_reason?: string | null
+          sale_date?: string
+          status?: Database["public"]["Enums"]["sale_status"]
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          goal_id?: string | null
+          id?: string
+          notes?: string | null
+          rejection_reason?: string | null
+          sale_date?: string
+          status?: Database["public"]["Enums"]["sale_status"]
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
       teams: {
         Row: {
           color: string | null
@@ -579,6 +624,7 @@ export type Database = {
       app_role: "admin" | "employee" | "supervisor"
       goal_scope: "individual" | "team" | "company"
       payslip_status: "pending" | "signed" | "rejected"
+      sale_status: "pending" | "approved" | "rejected"
       vacation_status:
         | "scheduled"
         | "in_progress"
@@ -716,6 +762,7 @@ export const Constants = {
       app_role: ["admin", "employee", "supervisor"],
       goal_scope: ["individual", "team", "company"],
       payslip_status: ["pending", "signed", "rejected"],
+      sale_status: ["pending", "approved", "rejected"],
       vacation_status: [
         "scheduled",
         "in_progress",
