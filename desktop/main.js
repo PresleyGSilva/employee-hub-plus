@@ -6,6 +6,14 @@ const path = require("path");
 
 const APP_URL = "https://ttotuscred.online";
 
+// Corrige tela preta em algumas máquinas (GPUs antigas / drivers Intel/AMD com bugs).
+// Desativa aceleração de hardware e força renderizador de software como fallback estável.
+try { app.disableHardwareAcceleration(); } catch (_) {}
+app.commandLine.appendSwitch("disable-gpu");
+app.commandLine.appendSwitch("disable-gpu-compositing");
+app.commandLine.appendSwitch("disable-software-rasterizer");
+app.commandLine.appendSwitch("no-sandbox");
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1280,
