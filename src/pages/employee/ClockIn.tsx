@@ -23,6 +23,8 @@ type Entry = {
   lunch_in: string | null;
   break_out: string | null;
   break_in: string | null;
+  snack_out: string | null;
+  snack_in: string | null;
   worked_minutes: number | null;
   late_minutes: number | null;
   overtime_minutes: number | null;
