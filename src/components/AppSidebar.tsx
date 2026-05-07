@@ -44,7 +44,10 @@ export function AppSidebar() {
   const navigate = useNavigate();
 
   const isAdminArea = pathname.startsWith("/admin");
-  const items = isAdminArea ? adminItems : employeeItems;
+  const baseItems = isAdminArea ? adminItems : employeeItems;
+  const items = !isAdminArea && (role === "supervisor" || (isAdmin && viewAs === "supervisor"))
+    ? [...baseItems, { title: "Pontos da Equipe", url: "/app/pontos-equipe", icon: Clock }]
+    : baseItems;
   const roleLabel = isAdminArea
     ? "Administrador"
     : role === "supervisor"
