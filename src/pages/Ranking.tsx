@@ -229,6 +229,7 @@ export default function Ranking() {
                   total: Number(t.total),
                   subtitle: `${t.members_count} membros`,
                   color: t.team_color,
+                  emblem: getTeamEmblem(t.team_name),
                 }))} />
               </div>
 
@@ -237,12 +238,14 @@ export default function Ranking() {
                   <CardTitle className="text-base">Todas as equipes</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {teamsTop.map((t, i) => (
+                  {teamsTop.map((t, i) => {
+                    const emblem = getTeamEmblem(t.team_name);
+                    return (
                     <div key={t.team_id} className="flex items-center gap-3 px-3 py-3 rounded-xl bg-card border hover:shadow-md transition-all">
                       <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-sm shrink-0">{i + 1}</div>
-                      <div className="h-11 w-11 rounded-xl flex items-center justify-center font-bold text-white shrink-0 shadow"
-                        style={{ background: t.team_color || "hsl(var(--primary))" }}>
-                        {initials(t.team_name)}
+                      <div className="h-11 w-11 rounded-xl flex items-center justify-center font-bold text-white shrink-0 shadow overflow-hidden"
+                        style={{ background: emblem ? "white" : (t.team_color || "hsl(var(--primary))") }}>
+                        {emblem ? <img src={emblem} alt={t.team_name} className="h-full w-full object-contain p-1" /> : initials(t.team_name)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm truncate">{t.team_name}</p>
