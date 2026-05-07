@@ -50,24 +50,39 @@ export default function Chat() {
         .order("full_name");
       list = data ?? [];
     } else {
-      // Get my team
+      // Always allow chatting with admins (show their names)
+      const { data: adminRoles } = await supabase.from("user_roles").select("user_id").eq("role", "admin");
+      const adminIds = new Set<string>((adminRoles ?? []).map((r) => r.user_id));
+      adminIds.delete(user.id);
+
+      // Find users I have already exchanged messages with (any conversation)
+      const { data: convMsgs } = await supabase
+        .from("messages")
+        .select("sender_id, recipient_id")
+        .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`);
+      const interactedIds = new Set<string>();
+      (convMsgs ?? []).forEach((m: any) => {
+        const other = m.sender_id === user.id ? m.recipient_id : m.sender_id;
+        if (other && other !== user.id) interactedIds.add(other);
+      });
+
+      // Restrict interacted contacts to teammates only (employees can't see other employees from outside their team)
       const { data: me } = await supabase.from("profiles").select("team_id").eq("id", user.id).maybeSingle();
       const teamId = me?.team_id;
-      // Always allow chatting with admins
-      const { data: adminRoles } = await supabase.from("user_roles").select("user_id").eq("role", "admin");
-      const adminIds = (adminRoles ?? []).map((r) => r.user_id);
-
-      const ids = new Set<string>(adminIds);
-
+      const teammateIds = new Set<string>();
       if (teamId) {
         const { data: mates } = await supabase
           .from("profiles")
           .select("id")
           .eq("team_id", teamId)
           .eq("active", true);
-        mates?.forEach((m) => ids.add(m.id));
+        mates?.forEach((m) => { if (m.id !== user.id) teammateIds.add(m.id); });
       }
-      ids.delete(user.id);
+
+      const ids = new Set<string>(adminIds);
+      // Add teammates only if there's prior interaction
+      interactedIds.forEach((id) => { if (teammateIds.has(id)) ids.add(id); });
+
       if (ids.size === 0) { setContacts([]); return; }
       const { data } = await supabase
         .from("profiles")
