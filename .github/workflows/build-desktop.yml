@@ -28,7 +28,7 @@ jobs:
         working-directory: desktop
         run: npm install
 
-      - name: Build Windows installer
+      - name: Build Windows installer (x64 + ia32)
         working-directory: desktop
         run: npm run build
 
@@ -37,3 +37,17 @@ jobs:
         with:
           name: TottusCred-Windows-Setup
           path: desktop/dist/*.exe
+
+      - name: Publish GitHub Release (latest)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: desktop-latest
+          name: Tottus Cred Desktop (última versão)
+          body: |
+            Instalador automático do Tottus Cred para Windows.
+            Compatível com Windows 8, 10 e 11 (32 e 64 bits).
+            O app abre o sistema online, então atualizações do site aparecem sozinhas — não precisa reinstalar.
+          files: desktop/dist/*.exe
+          make_latest: "true"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
